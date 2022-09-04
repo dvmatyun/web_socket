@@ -2,6 +2,9 @@ name: web_socket
 description: Websocket handler for all platforms
 
 version: 0.0.1-dev
+repository: https://github.com/dvmatyun/web_socket
+issue_tracker: https://github.com/dvmatyun/web_socket/issues
+homepage: https://github.com/dvmatyun/web_socket
 
 environment:
   sdk: ">=2.17.6 <3.0.0"
