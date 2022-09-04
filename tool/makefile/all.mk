@@ -5,6 +5,7 @@ install:
 	@dart pub get
 	@dart pub run build_runner build --delete-conflicting-outputs
 	@dart format --line-length=80 .
+	@dart format .
 	
 clean:
 	@echo "Cleaning the project"

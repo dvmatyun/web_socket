@@ -1,5 +1,8 @@
 name: web_socket
-description: Websocket handler for all platforms
+description: |
+  Convenient websocket handler for all platforms (both IO and web/HTML).
+  Websocket messages routing, statuses and other features have easy-to-use
+  interface.
 
 version: 0.0.1-dev
 repository: https://github.com/dvmatyun/web_socket
