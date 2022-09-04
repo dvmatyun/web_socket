@@ -11,20 +11,22 @@ import '../interfaces/websocket_handler.dart';
 import '../models/socket_log_event_impl.dart';
 import '../models/socket_state_impl.dart';
 
+/// Web websocket factory
 IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
   String connectUrlBase,
   IMessageProcessor<T, Y> messageProcessor, {
   int timeoutConnectionMs = 5000,
   int pingIntervalMs = 1000,
 }) =>
-    WebsocketHandlerIo<T, Y>(
+    WebsocketHandlerHtml<T, Y>(
       connectUrlBase: connectUrlBase,
       messageProcessor: messageProcessor,
       timeoutConnectionMs: timeoutConnectionMs,
       pingIntervalMs: pingIntervalMs,
     );
 
-class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
+/// Web implementation of websocket
+class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
   /// consts:
   final int _pingIntervalMs;
   final int _timeoutConnectionMs;
@@ -83,7 +85,12 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
       '${_mapWebsocketCode(_webSocket?.readyState ?? -1)} '
       '[${_webSocket?.readyState}]';
 
-  WebsocketHandlerIo({
+  /// [connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
+  /// [messageProcessor] how to process incoming and outgoing messages
+  /// [timeoutConnectionMs] connection timeout in ms.
+  /// Connection fails if not established during this timeout.
+  /// [pingIntervalMs] how often send ping messages to server
+  WebsocketHandlerHtml({
     required String connectUrlBase,
     required IMessageProcessor<T, Y> messageProcessor,
     int timeoutConnectionMs = 5000,
@@ -125,7 +132,8 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
       return false;
     } on TimeoutException catch (_) {
       await disconnect(
-        'Connection to [$_connectUrlBase] failed by timeout $_timeoutConnectionMs ms!',
+        'Connection to [$_connectUrlBase] failed by timeout '
+        '$_timeoutConnectionMs ms!',
       );
       return false;
     } on Object catch (e) {
@@ -305,16 +313,17 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     if (_debugEventController.isClosed) {
       return;
     }
+    final sb = StringBuffer(message);
     if ([SocketLogEventType.ping, SocketLogEventType.socketStateChanged]
         .contains(type)) {
-      message += _platformStaus;
+      sb.write(_platformStaus);
     }
 
     _debugEventController.add(
       SocketLogEventImpl(
         socketLogEventType: type,
         status: _socketState.status,
-        message: message,
+        message: sb.toString(),
         pingMs: pingDelayMs,
         data: data,
       ),
@@ -325,6 +334,7 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     while (socketState.status == SocketStatus.connected) {
       try {
         await Future<void>.delayed(Duration(milliseconds: _pingIntervalMs));
+        // ignore: invariant_booleans
         if (socketState.status != SocketStatus.connected) {
           return;
         }
@@ -349,7 +359,9 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     if (_webSocket?.readyState != html.WebSocket.OPEN) {
       _debugEventNotificationInternal(
         SocketLogEventType.ping,
-        '$whoChecks : _webSocket readyState is [${_mapWebsocketCode(_webSocket?.readyState ?? -1)}] !!! $_platformStaus',
+        '$whoChecks : _webSocket readyState is '
+        '[${_mapWebsocketCode(_webSocket?.readyState ?? -1)}] !!! '
+        '$_platformStaus',
       );
       return false;
     }
@@ -383,9 +395,9 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
         message == null ? msg : '$msg ($message)',
       );
     } else {
-      disconnect(
-        'Connection appeared to be closed during pinging websocket platform status!',
-      );
+      const message = 'Connection appeared to be closed during pinging '
+          'websocket platform status!';
+      disconnect(message);
     }
   }
 
@@ -415,8 +427,9 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
   }
 
   void _resetStopwatch() {
-    _pingStopwatch.stop();
-    _pingStopwatch.reset();
+    _pingStopwatch
+      ..stop()
+      ..reset();
   }
 
   void _recalculateCurrentPing(int newPingValue) {

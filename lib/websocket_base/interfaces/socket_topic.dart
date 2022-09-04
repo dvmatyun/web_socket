@@ -1,3 +1,5 @@
+/// Object interface to route websocket message data.
+/// Used same way as URL/URI in simple HTTP requests
 abstract class ISocketTopic {
   /// Full topic path.
   /// Example: [host/segmentOne] or [host/segmentOne/segmentTwo/segmentThree]
@@ -12,7 +14,8 @@ abstract class ISocketTopic {
   /// First param in topic. host == pathSegments[0]
   String get host;
 
-  /// Second param in topic. topic1 == pathSegments[1] (or empty string if not exists)
+  /// Second param in topic. topic1 == pathSegments[1]
+  /// (or empty string if not exists)
   String get topic1;
 
   /// topic2 == pathSegments[2] (or empty string if not exists)

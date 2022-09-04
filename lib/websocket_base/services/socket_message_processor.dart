@@ -5,6 +5,8 @@ import '../interfaces/message_to_server.dart';
 import '../interfaces/socket_message.dart';
 import '../models/socket_message_impl.dart';
 
+/// [IMessageProcessor] for [ISocketMessage]-typed input messages from server
+/// and [IMessageToServer]-typed outgoing messages to server
 class SocketMessageProcessor
     implements IMessageProcessor<ISocketMessage<dynamic>, IMessageToServer> {
   @override

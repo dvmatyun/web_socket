@@ -1,9 +1,7 @@
 import 'socket_message.dart';
 
+/// Convenient interface to send message to server
 abstract class IMessageToServer implements ISocketMessage<String?> {
-  /// Serialized as JSON string data
-  @override
-  String? get data;
-
+  /// Seralize object to JSON
   Map<String, dynamic> toJson();
 }

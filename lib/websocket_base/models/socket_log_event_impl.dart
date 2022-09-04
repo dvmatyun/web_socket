@@ -3,6 +3,7 @@ import '../enums/socket_status_type.dart';
 import '../interfaces/socket_log_event.dart';
 import 'socket_state_impl.dart';
 
+/// Common log event implementation for websocket
 class SocketLogEventImpl extends SocketStateImpl implements ISocketLogEvent {
   @override
   final SocketLogEventType socketLogEventType;
@@ -13,6 +14,7 @@ class SocketLogEventImpl extends SocketStateImpl implements ISocketLogEvent {
   @override
   final int pingMs;
 
+  /// Constructor
   SocketLogEventImpl({
     required this.socketLogEventType,
     required SocketStatus status,
