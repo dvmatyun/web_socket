@@ -3,11 +3,12 @@ import 'package:json_annotation/json_annotation.dart';
 import '../interfaces/socket_message.dart';
 import '../interfaces/socket_topic.dart';
 import 'socket_topic_impl.dart';
+
 part 'socket_message_impl.g.dart';
 
 /// Convenient message model for websocket message
 @JsonSerializable(explicitToJson: true)
-class SocketMessageImpl implements ISocketMessage<dynamic> {
+class SocketMessageImpl implements ISocketMessage<Object?> {
   @override
   @JsonKey(fromJson: socketTopicFromJson, toJson: socketTopicToJson)
   final ISocketTopic topic;
