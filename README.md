@@ -1,2 +1,2 @@
-# flutter_bricks_dvmatyun
-Templates for flutter apps
+# web_socket
+[![CHECKOUT](https://github.com/dvmatyun/web_socket/actions/workflows/checkout.yml/badge.svg)](https://github.com/dvmatyun/web_socket/actions/workflows/checkout.yml)
