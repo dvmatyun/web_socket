@@ -77,8 +77,18 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
   /// Platform specific:
   io.WebSocket? _webSocket;
   String get _platformStaus =>
-      '[ Platform status: close_code= ${_webSocket?.closeCode}, '
-      'close_reason= ${_webSocket?.closeReason} ]';
+      '[ Platform status: ${_getBeautifulSocketStatus()} ]';
+
+  String _getBeautifulSocketStatus() {
+    if (_webSocket == null) {
+      return "webSocket connection hasn't been opened yet!";
+    }
+    if (_webSocket?.closeCode == null && _webSocket?.closeReason == null) {
+      return 'connection opened';
+    }
+    return 'close_code= ${_webSocket?.closeCode}, '
+        'close_reason= ${_webSocket?.closeReason}';
+  }
 
   /// [connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
   /// [messageProcessor] how to process incoming and outgoing messages
@@ -228,6 +238,9 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
           'to server',
           data: outJsonMsg.toString(),
         );
+      } else {
+        // Generally this branch is for ping messages:
+        _addMessageToSocketOutgoingInternal(outJsonMsg);
       }
     } else {
       // Generally this branch is for ping messages:
@@ -460,6 +473,7 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     }
     await _fromServerMessagesSub?.cancel();
     await _webSocket?.close(3001, 'Requested by user!');
+    await Future<void>.delayed(const Duration(milliseconds: 50));
     _notifySocketStatusInternal(SocketStatus.disconnected, reason);
   }
 

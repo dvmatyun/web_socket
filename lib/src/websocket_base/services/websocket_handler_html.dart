@@ -238,13 +238,16 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
       final outJsonMsg = _messageProcessor.serializeMessage(data);
 
       if (!isPing || !_skipPingMessages) {
-        /// This controller's stream is listened by [_listenMessagesToServer()]
+        // This controller's stream is listened by [_listenMessagesToServer()]
         _outgoingMessagesController.add(outJsonMsg);
         _debugEventNotificationInternal(
           SocketLogEventType.toServerMessage,
           'to server',
           data: outJsonMsg.toString(),
         );
+      } else {
+        // Generally this branch is for ping messages:
+        _addMessageToSocketOutgoingInternal(outJsonMsg);
       }
     } else {
       // Generally this branch is for ping messages:

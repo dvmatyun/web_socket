@@ -43,8 +43,11 @@ class SocketMessageProcessor
   Object get pingServerMessage => _pingMsg;
 
   @override
-  bool isPongMessageReceived(ISocketMessage? data) {
+  bool isPongMessageReceived(Object? data) {
     if (data == null) {
+      return false;
+    }
+    if (data is! ISocketMessage) {
       return false;
     }
     if (data.topic.host == 'pong' || data.topic.host == 'ping') {

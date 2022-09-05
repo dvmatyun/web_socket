@@ -12,7 +12,10 @@ class SocketSimpleTextProcessor implements IMessageProcessor<String, String> {
   }
 
   @override
-  bool isPongMessageReceived(String? data) {
+  bool isPongMessageReceived(Object? data) {
+    if (data is! String) {
+      return false;
+    }
     if (['ping', 'pong'].contains(data)) {
       return true;
     }

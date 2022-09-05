@@ -16,5 +16,5 @@ abstract class IMessageProcessor<Tin, Yout> {
   Object get pingServerMessage;
 
   /// Receiving pong message from server:
-  bool isPongMessageReceived(Tin? data);
+  bool isPongMessageReceived(Object? data);
 }
