@@ -24,6 +24,9 @@ export 'src/websocket_base/models/socket_message_impl.dart';
 export 'src/websocket_base/models/socket_state_impl.dart';
 export 'src/websocket_base/models/socket_topic_impl.dart';
 
+/// Platform implementations:
+export 'src/websocket_base/platform_implementation/platform_websocket.dart';
+
 /// Services:
 export 'src/websocket_base/services/socket_message_processor.dart';
 export 'src/websocket_base/services/socket_simple_bytes_processor.dart';

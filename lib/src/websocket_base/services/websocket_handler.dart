@@ -1,17 +1,8 @@
 import 'dart:async';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 
-import '../enums/socket_log_event_type.dart';
-import '../enums/socket_status_type.dart';
-import '../interfaces/message_processor.dart';
-import '../interfaces/socket_log_event.dart';
-import '../interfaces/socket_state.dart';
-import '../interfaces/websocket_handler.dart';
-import '../models/socket_log_event_impl.dart';
-import '../models/socket_state_impl.dart';
+import '../../../websocket_universal.dart';
 
-/// Web websocket factory
+/// IO websocket factory
 IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
   String connectUrlBase,
   IMessageProcessor<T, Y> messageProcessor, {
@@ -19,7 +10,7 @@ IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
   int pingIntervalMs = 1000,
   bool skipPingMessages = true,
 }) =>
-    WebsocketHandlerHtml<T, Y>(
+    WebsocketHandler<T, Y>(
       connectUrlBase: connectUrlBase,
       messageProcessor: messageProcessor,
       timeoutConnectionMs: timeoutConnectionMs,
@@ -27,14 +18,13 @@ IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
       skipPingMessages: skipPingMessages,
     );
 
-/// Web implementation of websocket
-class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
+/// IO implementation of websocket
+class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
   final int _pingIntervalMs;
   final int _timeoutConnectionMs;
   final bool _skipPingMessages;
 
   /// consts:
-  static const int _onConnectionPingMs = 50;
   static const String _connectedPhrase = 'connected!';
   String _connectingPhrase(String url) => 'Connecting to [$url]...';
 
@@ -84,17 +74,14 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
   bool _disposed = false;
 
   /// Platform specific:
-  html.WebSocket? _webSocket;
-  String get _platformStaus => '[ Platform status: readyState= '
-      '${_mapWebsocketCode(_webSocket?.readyState ?? -1)} '
-      '[${_webSocket?.readyState}] ]';
+  final IPlatformWebsocket _platformWebSocket;
 
   /// [connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
   /// [messageProcessor] how to process incoming and outgoing messages
   /// [timeoutConnectionMs] connection timeout in ms.
   /// Connection fails if not established during this timeout.
   /// [pingIntervalMs] how often send ping messages to server
-  WebsocketHandlerHtml({
+  WebsocketHandler({
     required String connectUrlBase,
     required IMessageProcessor<T, Y> messageProcessor,
     int timeoutConnectionMs = 5000,
@@ -104,7 +91,8 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
         _messageProcessor = messageProcessor,
         _timeoutConnectionMs = timeoutConnectionMs,
         _pingIntervalMs = pingIntervalMs,
-        _skipPingMessages = skipPingMessages;
+        _skipPingMessages = skipPingMessages,
+        _platformWebSocket = IPlatformWebsocket.createPlatformWsClient();
 
   ///
   /// NOT CONNECTED
@@ -139,8 +127,8 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
       return false;
     } on TimeoutException catch (_) {
       await disconnect(
-        'Connection to [$_connectUrlBase] failed by timeout '
-        '$_timeoutConnectionMs ms!',
+        'Connection to [$_connectUrlBase] failed '
+        'by timeout $_timeoutConnectionMs ms!',
       );
       return false;
     } on Object catch (e) {
@@ -158,21 +146,9 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
       SocketStatus.connecting,
       _connectingPhrase(baseUrl),
     );
-    _webSocket = html.WebSocket(baseUrl);
-
-    /// Try _webSocket?.onOpen ?
-    for (var i = 0; i < _timeoutConnectionMs ~/ _onConnectionPingMs; i++) {
-      await Future<void>.delayed(
-        const Duration(milliseconds: _onConnectionPingMs),
-      );
-      if (_webSocket?.readyState == html.WebSocket.OPEN) {
-        break;
-      }
-    }
-    if (_webSocket?.readyState != html.WebSocket.OPEN) {
-      return false;
-    }
-
+    await _platformWebSocket
+        .connect(_connectUrlBase)
+        .timeout(Duration(milliseconds: _timeoutConnectionMs));
     return true;
   }
 
@@ -199,8 +175,8 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
   Future<void> _listenMessagerFromServer() async {
     _checkPlatformIsConnected('_listenMessagerFromServer');
     await _fromServerMessagesSub?.cancel();
-    _fromServerMessagesSub =
-        _webSocket?.onMessage.listen(_fromServerMessageInternal);
+    _fromServerMessagesSub = _platformWebSocket.incomingMessagesStream
+        .listen(_fromServerMessageInternal);
   }
 
   Future<void> _listenMessagesToServer() async {
@@ -276,7 +252,7 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
         );
       }
 
-      _addToSocketPlatform(input);
+      _platformWebSocket.sendMessage(input);
     } on Object catch (e) {
       _debugEventNotificationInternal(
         SocketLogEventType.error,
@@ -287,21 +263,10 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
   }
 
   /// Listening from server implementation:
-  Future<void> _fromServerMessageInternal(html.MessageEvent input) async {
+  void _fromServerMessageInternal(dynamic input) {
     try {
-      T? msgFromServer;
-      if (input.data is html.Blob) {
-        final blob = input.data as html.Blob;
-        final reader = html.FileReader();
-        // ignore: cascade_invocations
-        reader.readAsArrayBuffer(blob);
-        await reader.onLoadEnd.first;
-        final bytesList = reader.result as List<int>?;
-        msgFromServer = _messageProcessor.deserializeMessage(bytesList);
-      } else {
-        msgFromServer = _messageProcessor.deserializeMessage(input.data);
-      }
-
+      final data = input as Object?;
+      final msgFromServer = _messageProcessor.deserializeMessage(data);
       if (msgFromServer == null) {
         _debugEventNotificationInternal(
           SocketLogEventType.warning,
@@ -330,11 +295,6 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
         data: input.toString(),
       );
     }
-  }
-
-  void _addToSocketPlatform(Object data) {
-    /// Platform implementation here:
-    _webSocket?.send(data);
   }
 
   ///
@@ -366,7 +326,7 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
     final sb = StringBuffer(message);
     if ([SocketLogEventType.ping, SocketLogEventType.socketStateChanged]
         .contains(type)) {
-      sb.write(_platformStaus);
+      sb.write(_platformWebSocket.platformStatus);
     }
 
     _debugEventController.add(
@@ -399,38 +359,14 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
   }
 
   bool _checkPlatformIsConnected(String whoChecks) {
-    if (_webSocket == null) {
+    if (_platformWebSocket.socketStatus != SocketStatus.connected) {
       _debugEventNotificationInternal(
         SocketLogEventType.ping,
-        '$whoChecks : _webSocket object is NULL!',
-      );
-      return false;
-    }
-    if (_webSocket?.readyState != html.WebSocket.OPEN) {
-      _debugEventNotificationInternal(
-        SocketLogEventType.ping,
-        '$whoChecks : _webSocket readyState is '
-        '[${_mapWebsocketCode(_webSocket?.readyState ?? -1)}] !!! '
-        '$_platformStaus',
+        '$whoChecks ${_platformWebSocket.platformStatus}',
       );
       return false;
     }
     return true;
-  }
-
-  String _mapWebsocketCode(int readyState) {
-    switch (readyState) {
-      case 0:
-        return 'CONNECTING';
-      case 1:
-        return 'OPEN';
-      case 2:
-        return 'CLOSING';
-      case 3:
-        return 'CLOSED';
-      default:
-        return 'UNKNOWN';
-    }
   }
 
   void _isConnectionAlivePing({String? message}) {
@@ -509,7 +445,8 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
       return;
     }
     await _fromServerMessagesSub?.cancel();
-    _webSocket?.close(3001, 'Requested by user!');
+    await _platformWebSocket.close(3001, 'Requested by user!');
+    await Future<void>.delayed(const Duration(milliseconds: 50));
     _notifySocketStatusInternal(SocketStatus.disconnected, reason);
   }
 

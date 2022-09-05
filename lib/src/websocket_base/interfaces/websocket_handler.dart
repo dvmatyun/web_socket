@@ -1,9 +1,6 @@
 import 'dart:async';
 
-import '../services/websocket_handler_io.dart'
-
-// ignore: uri_does_not_exist
-    if (dart.library.html) '../services/websocket_handler_html.dart';
+import '../services/websocket_handler.dart';
 import '../services/websocket_handler_mock.dart';
 import 'message_processor.dart';
 import 'socket_log_event.dart';

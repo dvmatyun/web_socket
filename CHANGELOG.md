@@ -1,3 +1,7 @@
+# 0.0.4-dev
+
+- refactoring
+
 # 0.0.3-dev
 
 - now supports Byte array messages
