@@ -10,10 +10,10 @@ import 'socket_log_event.dart';
 import 'socket_state.dart';
 
 /// Basic websocket handler.
-/// [T] is type of incoming deserialized messages
+/// [Tin] is type of incoming deserialized messages
 /// (that are received from server and deserialized)
-/// [Y] is type of outgoing messages (that will be sent to server by you)
-abstract class IWebSocketHandler<T, Y> {
+/// [Yout] is type of outgoing messages (that will be sent to server by you)
+abstract class IWebSocketHandler<Tin, Yout> {
   /// Last known ping-pong delay between server and client
   int get pingDelayMs;
 
@@ -21,7 +21,7 @@ abstract class IWebSocketHandler<T, Y> {
   Stream<Object> get outgoingMessagesStream;
 
   /// Stream of deserialized messages from server
-  Stream<T> get incomingMessagesStream;
+  Stream<Tin> get incomingMessagesStream;
 
   /// 0 - not connected
   /// 1 - connecting
@@ -41,24 +41,28 @@ abstract class IWebSocketHandler<T, Y> {
   Future<void> disconnect(String reason);
 
   /// Send generic message to server
-  void sendMessage(Y messageToServer);
+  void sendMessage(Yout messageToServer);
 
   /// Dispose websocket handler (handler can not be used after calling [close])
   void close();
 
   /// Creates real websocket client depending on running platform (io / html). Requires server.
   /// [connectUrlBase] should look like [ws://127.0.0.1:42627/websocket]
+  /// If [skipPingMessages] is FALSE then PING/PONG messages will be added to
+  /// [outgoingMessagesStream] and [incomingMessagesStream] streams.
   factory IWebSocketHandler.createClient(
     String connectUrlBase,
-    IMessageProcessor<T, Y> messageProcessor, {
+    IMessageProcessor<Tin, Yout> messageProcessor, {
     int timeoutConnectionMs = 5000,
     int pingIntervalMs = 1000,
+    bool skipPingMessages = true,
   }) =>
       createWebsocketClient(
         connectUrlBase,
         messageProcessor,
         timeoutConnectionMs: timeoutConnectionMs,
         pingIntervalMs: pingIntervalMs,
+        skipPingMessages: skipPingMessages,
       );
 
   /// Created NOT REAL websocket client, that responses
@@ -66,7 +70,7 @@ abstract class IWebSocketHandler<T, Y> {
   /// Use only for debug purposes, no connection with server can be established
   factory IWebSocketHandler.createMockedWebsocketClient(
     String connectUrlBase,
-    IMessageProcessor<T, Y> messageProcessor,
+    IMessageProcessor<Tin, Yout> messageProcessor,
   ) =>
       createMockedWebsocketClient(
         connectUrlBase,

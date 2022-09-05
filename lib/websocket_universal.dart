@@ -26,3 +26,4 @@ export 'src/websocket_base/models/socket_topic_impl.dart';
 
 /// Services:
 export 'src/websocket_base/services/socket_message_processor.dart';
+export 'src/websocket_base/services/socket_simple_text_processor.dart';

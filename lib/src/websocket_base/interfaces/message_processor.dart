@@ -1,16 +1,20 @@
 /// Websocket processor interface
-/// for [T]-typed input messages from server
-/// and [Y]-typed outgoing messages to server
-abstract class IMessageProcessor<T, Y> {
+/// for [Tin]-typed input messages from server
+/// and [Yout]-typed outgoing messages to server
+abstract class IMessageProcessor<Tin, Yout> {
   /// Deserialize message received from server
-  T? deserializeMessage(Object? data);
+  Tin? deserializeMessage(Object? data);
 
   /// Serialize message to server
-  Object serializeMessage(Y message);
+  /// For multiplatform it can be [String]
+  /// For IO ws data also can be a `List<int>` holding bytes
+  Object serializeMessage(Yout message);
 
-  /// Sending ping message to server:
+  /// Ping message that is sent to server.
+  /// At this point it should be either [String] or [Yout] type
+  /// For IO ws data also can be a `List<int>` holding bytes
   Object get pingServerMessage;
 
   /// Receiving pong message from server:
-  bool isPongMessageReceived(T? data);
+  bool isPongMessageReceived(Tin? data);
 }

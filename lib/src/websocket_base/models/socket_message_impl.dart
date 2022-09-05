@@ -58,5 +58,5 @@ class SocketMessageImpl implements ISocketMessage<Object?> {
   Map<String, dynamic> toJson() => _$SocketMessageImplToJson(this);
 
   @override
-  String toString() => 'topic: [$topic], data: [$data], error: [$error]';
+  String toString() => '{ topic: [$topic], data: [$data], error: [$error] }';
 }

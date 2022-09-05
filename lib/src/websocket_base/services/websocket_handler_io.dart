@@ -9,19 +9,23 @@ IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
   IMessageProcessor<T, Y> messageProcessor, {
   int timeoutConnectionMs = 5000,
   int pingIntervalMs = 1000,
+  bool skipPingMessages = true,
 }) =>
     WebsocketHandlerIo<T, Y>(
       connectUrlBase: connectUrlBase,
       messageProcessor: messageProcessor,
       timeoutConnectionMs: timeoutConnectionMs,
       pingIntervalMs: pingIntervalMs,
+      skipPingMessages: skipPingMessages,
     );
 
 /// IO implementation of websocket
 class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
-  /// consts:
   final int _pingIntervalMs;
   final int _timeoutConnectionMs;
+  final bool _skipPingMessages;
+
+  /// consts:
   static const String _connectedPhrase = 'connected!';
   String _connectingPhrase(String url) => 'Connecting to [$url]...';
 
@@ -73,8 +77,8 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
   /// Platform specific:
   io.WebSocket? _webSocket;
   String get _platformStaus =>
-      'Platform status: close code= ${_webSocket?.closeCode}, '
-      'close reason=${_webSocket?.closeReason}';
+      '[ Platform status: close_code= ${_webSocket?.closeCode}, '
+      'close_reason= ${_webSocket?.closeReason} ]';
 
   /// [connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
   /// [messageProcessor] how to process incoming and outgoing messages
@@ -86,10 +90,12 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     required IMessageProcessor<T, Y> messageProcessor,
     int timeoutConnectionMs = 5000,
     int pingIntervalMs = 1000,
+    bool skipPingMessages = true,
   })  : _connectUrlBase = connectUrlBase,
         _messageProcessor = messageProcessor,
         _timeoutConnectionMs = timeoutConnectionMs,
-        _pingIntervalMs = pingIntervalMs;
+        _pingIntervalMs = pingIntervalMs,
+        _skipPingMessages = skipPingMessages;
 
   ///
   /// NOT CONNECTED
@@ -194,6 +200,10 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
   ///
   @override
   void sendMessage(Y messageToServer) {
+    _sendMessageInternal(messageToServer, false);
+  }
+
+  void _sendMessageInternal(Object? data, bool isPing) {
     if (_disposed) {
       return;
     }
@@ -204,30 +214,36 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
       );
       return;
     }
-    final outJsonMsg = _messageProcessor.serializeMessage(messageToServer);
+    if (isPing) {
+      _startPingRequest();
+    }
+    if (data is Y) {
+      final outJsonMsg = _messageProcessor.serializeMessage(data);
 
-    /// This controller's stream is listened by [_listenMessagesToServer()]
-    _outgoingMessagesController.add(outJsonMsg);
-  }
-
-  /// Sending to server platform implementation:
-  void _addMessageToSocketOutgoingInternal(
-    Object input, {
-    bool isPing = false,
-  }) {
-    try {
-      if (!isPing) {
+      if (!isPing || !_skipPingMessages) {
+        // This controller's stream is listened by [_listenMessagesToServer()]
+        _outgoingMessagesController.add(outJsonMsg);
         _debugEventNotificationInternal(
           SocketLogEventType.toServerMessage,
           'to server',
-          data: input.toString(),
+          data: outJsonMsg.toString(),
         );
-      } else {
-        _startPingRequest();
+      }
+    } else {
+      // Generally this branch is for ping messages:
+      _addMessageToSocketOutgoingInternal(data);
+    }
+  }
+
+  /// Sending to server platform implementation:
+  void _addMessageToSocketOutgoingInternal(Object? input) {
+    try {
+      if (input == null) {
+        throw ArgumentError.notNull('[_addMessageToSocketOutgoingInternal] '
+            'sent data must not be NULL!');
       }
 
-      /// Platform implementation here:
-      _webSocket?.add(input);
+      _addToSocketPlatform(input);
     } on Object catch (e) {
       _debugEventNotificationInternal(
         SocketLogEventType.error,
@@ -253,15 +269,16 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
           _messageProcessor.isPongMessageReceived(msgFromServer);
       if (isPingMessage) {
         _pongReceived();
-      } else {
+      }
+
+      if (!isPingMessage || !_skipPingMessages) {
+        _incomingMessagesController.add(msgFromServer);
         _debugEventNotificationInternal(
           SocketLogEventType.fromServerMessage,
           'from server',
           data: msgFromServer.toString(),
         );
       }
-
-      _incomingMessagesController.add(msgFromServer);
     } on Object catch (e) {
       _debugEventNotificationInternal(
         SocketLogEventType.error,
@@ -269,6 +286,11 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
         data: input.toString(),
       );
     }
+  }
+
+  void _addToSocketPlatform(Object data) {
+    /// Platform implementation here:
+    _webSocket?.add(data);
   }
 
   ///
@@ -359,10 +381,12 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
 
   void _isConnectionAlivePing({String? message}) {
     if (_checkPlatformIsConnected('Ping socket.')) {
-      _addMessageToSocketOutgoingInternal(
-        _messageProcessor.pingServerMessage,
-        isPing: true,
-      );
+      if (!_skipPingMessages && _messageProcessor.pingServerMessage is Y) {
+        sendMessage(_messageProcessor.pingServerMessage as Y);
+      } else {
+        _sendMessageInternal(_messageProcessor.pingServerMessage, true);
+      }
+
       final msg = 'Ping socket. Status: ${socketState.status.value}.';
       _debugEventNotificationInternal(
         SocketLogEventType.ping,
@@ -434,6 +458,7 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     if (socketState.status == SocketStatus.disconnected) {
       return;
     }
+    await _fromServerMessagesSub?.cancel();
     await _webSocket?.close(3001, 'Requested by user!');
     _notifySocketStatusInternal(SocketStatus.disconnected, reason);
   }
