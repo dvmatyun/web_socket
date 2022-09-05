@@ -69,7 +69,7 @@ jobs:
         timeout-minutes: 2
         run: |
           dart run coverage:test_with_coverage -fb -o coverage -- \
-            --concurrency=6 --platform vm --coverage=./coverage --reporter=expanded test/isolation_test.dart
+            --concurrency=6 --platform vm --coverage=./coverage --reporter=expanded test/websocket_universal_test.dart
 
       #- name: 📥 Upload coverage to Codecov
       #  timeout-minutes: 1
