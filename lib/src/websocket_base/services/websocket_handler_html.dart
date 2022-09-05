@@ -131,6 +131,7 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
       _setInitPing();
       if (isConnected) {
         await _connectionSuccessful();
+        _isConnectionAlivePing();
         return true;
       }
       await _connectionUnsuccessful();
@@ -171,7 +172,7 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
     if (_webSocket?.readyState != html.WebSocket.OPEN) {
       return false;
     }
-    _isConnectionAlivePing();
+
     return true;
   }
 
@@ -207,7 +208,7 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
     await _toServerMessagesSub?.cancel();
     _toServerMessagesSub = outgoingMessagesStream
         .takeWhile((_) => socketState.status == SocketStatus.connected)
-        .listen(_addMessageToSocketOutgoingInternal);
+        .listen((e) => _addMessageToSocketOutgoingInternal(e, true));
   }
 
   ///
@@ -234,33 +235,45 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
     if (isPing) {
       _startPingRequest();
     }
-    if (data is Y) {
-      final outJsonMsg = _messageProcessor.serializeMessage(data);
 
-      if (!isPing || !_skipPingMessages) {
-        // This controller's stream is listened by [_listenMessagesToServer()]
-        _outgoingMessagesController.add(outJsonMsg);
-        _debugEventNotificationInternal(
-          SocketLogEventType.toServerMessage,
-          'to server',
-          data: outJsonMsg.toString(),
-        );
-      } else {
-        // Generally this branch is for ping messages:
-        _addMessageToSocketOutgoingInternal(outJsonMsg);
-      }
+    Object? dataToSend;
+    if (data is Y) {
+      dataToSend = _messageProcessor.serializeMessage(data);
     } else {
-      // Generally this branch is for ping messages:
-      _addMessageToSocketOutgoingInternal(data);
+      dataToSend = data;
+    }
+    if (dataToSend == null) {
+      _debugEventNotificationInternal(
+        SocketLogEventType.warning,
+        'Trying to send NULL data!',
+      );
+      return;
+    }
+    if (!isPing) {
+      // This controller's stream is listened by [_listenMessagesToServer()]
+      _outgoingMessagesController.add(dataToSend);
+    } else {
+      if (_skipPingMessages) {
+        _addMessageToSocketOutgoingInternal(dataToSend, false);
+      } else {
+        _outgoingMessagesController.add(dataToSend);
+      }
     }
   }
 
   /// Sending to server platform implementation:
-  void _addMessageToSocketOutgoingInternal(Object? input) {
+  void _addMessageToSocketOutgoingInternal(Object? input, bool notify) {
     try {
       if (input == null) {
         throw ArgumentError.notNull('[_addMessageToSocketOutgoingInternal] '
             'sent data must not be NULL!');
+      }
+      if (notify) {
+        _debugEventNotificationInternal(
+          SocketLogEventType.toServerMessage,
+          'to server',
+          data: input.toString(),
+        );
       }
 
       _addToSocketPlatform(input);
@@ -274,10 +287,21 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
   }
 
   /// Listening from server implementation:
-  void _fromServerMessageInternal(dynamic input) {
+  Future<void> _fromServerMessageInternal(html.MessageEvent input) async {
     try {
-      final data = input as Object?;
-      final msgFromServer = _messageProcessor.deserializeMessage(data);
+      T? msgFromServer;
+      if (input.data is html.Blob) {
+        final blob = input.data as html.Blob;
+        final reader = html.FileReader();
+        // ignore: cascade_invocations
+        reader.readAsArrayBuffer(blob);
+        await reader.onLoadEnd.first;
+        final bytesList = reader.result as List<int>?;
+        msgFromServer = _messageProcessor.deserializeMessage(bytesList);
+      } else {
+        msgFromServer = _messageProcessor.deserializeMessage(input.data);
+      }
+
       if (msgFromServer == null) {
         _debugEventNotificationInternal(
           SocketLogEventType.warning,
@@ -411,11 +435,7 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
 
   void _isConnectionAlivePing({String? message}) {
     if (_checkPlatformIsConnected('Ping socket.')) {
-      if (!_skipPingMessages && _messageProcessor.pingServerMessage is Y) {
-        sendMessage(_messageProcessor.pingServerMessage as Y);
-      } else {
-        _sendMessageInternal(_messageProcessor.pingServerMessage, true);
-      }
+      _sendMessageInternal(_messageProcessor.pingServerMessage, true);
 
       final msg = 'Ping socket. Status: ${socketState.status.value}.';
       _debugEventNotificationInternal(

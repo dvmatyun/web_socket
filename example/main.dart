@@ -1,5 +1,6 @@
 import 'package:websocket_universal/websocket_universal.dart';
 
+/// Example works with Postman Echo server
 void main() async {
   /// Postman echo ws server (you can use your own server URI)
   /// For local server it could look like 'ws://127.0.0.1:42627/websocket'
