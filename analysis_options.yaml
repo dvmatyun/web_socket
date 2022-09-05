@@ -4,6 +4,8 @@ analyzer:
   exclude:
     # Build
     - "build/**"
+    # Generated
+    - "lib/**.g.dart"
     # Tests
     - "test/**.mocks.dart"
     - ".test_coverage.dart"

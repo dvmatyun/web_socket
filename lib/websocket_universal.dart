@@ -4,5 +4,6 @@
 
 library websocket_universal;
 
+/// Enums:
 export 'src/websocket_base/interfaces/message_processor.dart';
 export 'src/websocket_base/services/socket_message_processor.dart';
