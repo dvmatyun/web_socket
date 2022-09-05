@@ -1,11 +1,18 @@
-.PHONY: get
+.PHONY: get upgrade upgrade-major outdated deploy deploy-test
 
 get:
 	@dart pub get
 
-pana: get
-	@dart pub global activate pana
-	@dart pub global run pana
+upgrade: get
+	@echo "Upgrading dependencies"
+	@dart pub upgrade
+
+upgrade-major: get
+	@echo "Upgrading dependencies --major-versions"
+	@dart pub upgrade --major-versions
+
+outdated:
+	@dart pub outdated
 
 deploy:
 	@dart pub publish

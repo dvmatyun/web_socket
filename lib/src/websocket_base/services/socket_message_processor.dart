@@ -8,10 +8,11 @@ import '../models/socket_message_impl.dart';
 /// [IMessageProcessor] for [ISocketMessage]-typed input messages from server
 /// and [IMessageToServer]-typed outgoing messages to server
 class SocketMessageProcessor
-    implements IMessageProcessor<ISocketMessage<dynamic>, IMessageToServer> {
+    implements IMessageProcessor<ISocketMessage<Object?>, IMessageToServer> {
   @override
   ISocketMessage? deserializeMessage(Object? data) {
     if (data is! String) {
+      assert(false, 'Unsupported message type: ${data.runtimeType}');
       return null;
     }
     final wsMessage =
