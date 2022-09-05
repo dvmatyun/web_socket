@@ -14,8 +14,7 @@ MessageToServerImpl _$MessageToServerImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$MessageToServerImplToJson(
-  MessageToServerImpl instance,
-) =>
+        MessageToServerImpl instance) =>
     <String, dynamic>{
       'topic': socketTopicToJson(instance.topic),
       'data': instance.data,

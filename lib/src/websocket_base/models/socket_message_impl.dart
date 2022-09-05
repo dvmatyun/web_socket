@@ -22,6 +22,13 @@ class SocketMessageImpl implements ISocketMessage<Object?> {
   /// Basic constructor
   const SocketMessageImpl({required this.topic, this.data, this.error});
 
+  /// Constructor with single topic path segment - [host]
+  SocketMessageImpl.onlyHost({
+    required String host,
+    this.data,
+    this.error,
+  }) : topic = SocketTopicImpl.onlyHost(host: host);
+
   /// Constructor with 2 topic path segments - [host] and [topic1]
   SocketMessageImpl.duo({
     required String host,
@@ -49,4 +56,7 @@ class SocketMessageImpl implements ISocketMessage<Object?> {
 
   /// Seralize object to JSON
   Map<String, dynamic> toJson() => _$SocketMessageImplToJson(this);
+
+  @override
+  String toString() => 'topic: [$topic], data: [$data], error: [$error]';
 }

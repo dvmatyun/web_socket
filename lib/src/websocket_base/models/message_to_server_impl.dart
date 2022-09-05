@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../interfaces/message_to_server.dart';
 import '../interfaces/socket_topic.dart';
 import 'socket_topic_impl.dart';
+
 part 'message_to_server_impl.g.dart';
 
 @JsonSerializable(explicitToJson: true)
@@ -21,6 +22,13 @@ class MessageToServerImpl implements IMessageToServer {
 
   /// Basic constructor
   const MessageToServerImpl({required this.topic, this.data, this.error});
+
+  /// Constructor with single path segment - [host]
+  MessageToServerImpl.onlyHost({
+    required String host,
+    this.data,
+    this.error,
+  }) : topic = SocketTopicImpl.onlyHost(host: host);
 
   /// Constructor with 2 topic path segments - [host] and [topic1]
   MessageToServerImpl.duo({

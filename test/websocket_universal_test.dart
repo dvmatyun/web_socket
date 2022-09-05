@@ -1,7 +1,4 @@
 import 'package:test/test.dart';
-import 'package:websocket_universal/src/websocket_base/interfaces/socket_message.dart';
-import 'package:websocket_universal/src/websocket_base/models/message_to_server_impl.dart';
-import 'package:websocket_universal/src/websocket_base/models/socket_topic_impl.dart';
 import 'package:websocket_universal/websocket_universal.dart';
 
 void main() {

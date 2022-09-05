@@ -176,7 +176,8 @@ class WebsocketHandlerHtml<T, Y> implements IWebSocketHandler<T, Y> {
     }
     await _listenMessagerFromServer();
     await _listenMessagesToServer();
-    await _pingSocketState();
+    // ignore: unawaited_futures
+    _pingSocketState();
   }
 
   Future<void> _connectionUnsuccessful() async {

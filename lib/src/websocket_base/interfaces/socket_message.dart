@@ -1,5 +1,8 @@
 import 'socket_topic.dart';
 
+/// Json key for topic property
+const String topicJsonKey = 'topic';
+
 /// Convenient interface for websocket messaging between server and client
 abstract class ISocketMessage<T> {
   /// How server/client will understand how to route this message

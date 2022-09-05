@@ -1,14 +1,7 @@
 import 'dart:async';
 import 'dart:io' as io;
 
-import '../enums/socket_log_event_type.dart';
-import '../enums/socket_status_type.dart';
-import '../interfaces/message_processor.dart';
-import '../interfaces/socket_log_event.dart';
-import '../interfaces/socket_state.dart';
-import '../interfaces/websocket_handler.dart';
-import '../models/socket_log_event_impl.dart';
-import '../models/socket_state_impl.dart';
+import '../../../websocket_universal.dart';
 
 /// IO websocket factory
 IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
@@ -118,7 +111,6 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
           );
         }
       }
-
       _startPingMeasurement();
       final isConnected = await _connectionInitialize(_connectUrlBase);
       _setInitPing();
@@ -156,6 +148,7 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     }
     _webSocket = await io.WebSocket.connect(connectUrl)
         .timeout(Duration(milliseconds: _timeoutConnectionMs));
+    _webSocket?.pingInterval = const Duration(milliseconds: 500);
     _isConnectionAlivePing();
     return true;
   }
@@ -167,7 +160,8 @@ class WebsocketHandlerIo<T, Y> implements IWebSocketHandler<T, Y> {
     }
     await _listenMessagerFromServer();
     await _listenMessagesToServer();
-    await _pingSocketState();
+    // ignore: unawaited_futures
+    _pingSocketState();
   }
 
   Future<void> _connectionUnsuccessful() async {
