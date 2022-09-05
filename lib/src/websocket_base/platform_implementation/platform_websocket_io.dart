@@ -44,10 +44,9 @@ class PlatformWebsocketIo implements IPlatformWebsocket {
   }
 
   @override
-  String get platformStatus => '[ Platform status: '
-      '${_getBeautifulSocketStatus()} ]';
+  String get platformStatus => '[Web Platform status: ${_socketStatus()} ]';
 
-  String _getBeautifulSocketStatus() {
+  String _socketStatus() {
     if (_webSocket == null) {
       return "webSocket connection hasn't been opened yet!";
     }

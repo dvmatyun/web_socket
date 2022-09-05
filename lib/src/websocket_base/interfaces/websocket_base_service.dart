@@ -1,28 +1,26 @@
 import 'dart:async';
 
-import '../services/websocket_handler.dart';
-import '../services/websocket_handler_mock.dart';
-import 'message_processor.dart';
-import 'socket_log_event.dart';
-import 'socket_state.dart';
+import '../../../websocket_universal.dart';
 
-/// Basic websocket handler.
+/// Basic universal (multiplatform) websocket service.
 /// [Tin] is type of incoming deserialized messages
 /// (that are received from server and deserialized)
 /// [Yout] is type of outgoing messages (that will be sent to server by you)
-abstract class IWebSocketHandler<Tin, Yout> {
+abstract class IWebSocketBaseService<Tin, Yout> {
   /// Last known ping-pong delay between server and client
   int get pingDelayMs;
 
   /// Stream of serialized messages to server
+  /// It has [Object] type because ping message type can differ from
+  /// [Yout] type.
+  /// [WebSocketBaseService] does not add `Ping` messages to this stream
   Stream<Object> get outgoingMessagesStream;
 
   /// Stream of deserialized messages from server
+  /// [WebSocketBaseService] does not add `Pong` messages to this stream
   Stream<Tin> get incomingMessagesStream;
 
-  /// 0 - not connected
-  /// 1 - connecting
-  /// 2 - connected
+  /// Socket state changes
   Stream<ISocketState> get socketStateStream;
 
   /// Current socket state
@@ -41,36 +39,28 @@ abstract class IWebSocketHandler<Tin, Yout> {
   void sendMessage(Yout messageToServer);
 
   /// Dispose websocket handler (handler can not be used after calling [close])
+  /// You MUST create new WebSocket object in order to handle new events
   void close();
 
   /// Creates real websocket client depending on running platform (io / html). Requires server.
   /// [connectUrlBase] should look like [ws://127.0.0.1:42627/websocket]
+  /// [timeoutConnectionMs] milliseconds timeout for establishing a connection
+  /// Ping server with custom message every [pingIntervalMs] milliseconds
+  /// Ping/pong messages are defined in [IMessageProcessor] class
   /// If [skipPingMessages] is FALSE then PING/PONG messages will be added to
   /// [outgoingMessagesStream] and [incomingMessagesStream] streams.
-  factory IWebSocketHandler.createClient(
+  factory IWebSocketBaseService.createClient(
     String connectUrlBase,
     IMessageProcessor<Tin, Yout> messageProcessor, {
     int timeoutConnectionMs = 5000,
-    int pingIntervalMs = 1000,
+    int pingIntervalMs = 2000,
     bool skipPingMessages = true,
   }) =>
-      createWebsocketClient(
+      createWebsocketBaseService(
         connectUrlBase,
         messageProcessor,
         timeoutConnectionMs: timeoutConnectionMs,
         pingIntervalMs: pingIntervalMs,
         skipPingMessages: skipPingMessages,
-      );
-
-  /// Created NOT REAL websocket client, that responses
-  /// with same message as you send to it.
-  /// Use only for debug purposes, no connection with server can be established
-  factory IWebSocketHandler.createMockedWebsocketClient(
-    String connectUrlBase,
-    IMessageProcessor<Tin, Yout> messageProcessor,
-  ) =>
-      createMockedWebsocketClient(
-        connectUrlBase,
-        messageProcessor,
       );
 }

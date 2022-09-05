@@ -3,6 +3,8 @@
 /// and [Yout]-typed outgoing messages to server
 abstract class IMessageProcessor<Tin, Yout> {
   /// Deserialize message received from server
+  /// Called after [isPongMessageReceived].
+  /// Skipped if [isPongMessageReceived] return true for performance purpose.
   Tin? deserializeMessage(Object? data);
 
   /// Serialize message to server
@@ -15,6 +17,7 @@ abstract class IMessageProcessor<Tin, Yout> {
   /// For IO ws data also can be a `List<int>` holding bytes
   Object get pingServerMessage;
 
-  /// Receiving pong message from server:
+  /// Receiving pong message from server.
+  /// Recommended to be a fast and cheap function.
   bool isPongMessageReceived(Object? data);
 }

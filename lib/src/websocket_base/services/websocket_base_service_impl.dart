@@ -2,15 +2,15 @@ import 'dart:async';
 
 import '../../../websocket_universal.dart';
 
-/// IO websocket factory
-IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
+/// Websocket base service factory
+IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
   String connectUrlBase,
   IMessageProcessor<T, Y> messageProcessor, {
   int timeoutConnectionMs = 5000,
-  int pingIntervalMs = 1000,
+  int pingIntervalMs = 2000,
   bool skipPingMessages = true,
 }) =>
-    WebsocketHandler<T, Y>(
+    WebSocketBaseService<T, Y>(
       connectUrlBase: connectUrlBase,
       messageProcessor: messageProcessor,
       timeoutConnectionMs: timeoutConnectionMs,
@@ -18,8 +18,9 @@ IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
       skipPingMessages: skipPingMessages,
     );
 
-/// IO implementation of websocket
-class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
+/// Base implementation of [IWebSocketBaseService]
+/// using [IPlatformWebsocket] abstraction
+class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   final int _pingIntervalMs;
   final int _timeoutConnectionMs;
   final bool _skipPingMessages;
@@ -53,9 +54,6 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
   StreamSubscription? _fromServerMessagesSub;
 
   /// Socket state notifications:
-  /// 0 - not connected
-  /// 1 - connecting
-  /// 2 - connected
   final StreamController<ISocketState> _socketStateController =
       StreamController<ISocketState>.broadcast();
   @override
@@ -81,7 +79,7 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
   /// [timeoutConnectionMs] connection timeout in ms.
   /// Connection fails if not established during this timeout.
   /// [pingIntervalMs] how often send ping messages to server
-  WebsocketHandler({
+  WebSocketBaseService({
     required String connectUrlBase,
     required IMessageProcessor<T, Y> messageProcessor,
     int timeoutConnectionMs = 5000,
@@ -109,7 +107,7 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
         if (_checkPlatformIsConnected('connect method')) {
           return true;
         } else {
-          await disconnect(
+          await _internalDisconnect(
             'connection appears to be broken. Connecting again.',
           );
         }
@@ -126,13 +124,13 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
 
       return false;
     } on TimeoutException catch (_) {
-      await disconnect(
+      await _internalDisconnect(
         'Connection to [$_connectUrlBase] failed '
         'by timeout $_timeoutConnectionMs ms!',
       );
       return false;
     } on Object catch (e) {
-      await disconnect('Internal error: $e');
+      await _internalDisconnect('Internal error: $e');
       return false;
     }
   }
@@ -155,7 +153,7 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
   Future<void> _connectionSuccessful() async {
     _notifySocketStatusInternal(SocketStatus.connected, _connectedPhrase);
     if (socketState.status != SocketStatus.connected) {
-      return disconnect('Connection with server was not established!');
+      return _internalDisconnect('Connection with server was not established!');
     }
     await _listenMessagerFromServer();
     await _listenMessagesToServer();
@@ -164,7 +162,7 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
   }
 
   Future<void> _connectionUnsuccessful() async {
-    await disconnect('Connection unsuccessful');
+    await _internalDisconnect('Connection unsuccessful');
   }
 
   ///
@@ -232,7 +230,7 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
       if (_skipPingMessages) {
         _addMessageToSocketOutgoingInternal(dataToSend, false);
       } else {
-        _outgoingMessagesController.add(dataToSend);
+        _addMessageToSocketOutgoingInternal(dataToSend, true);
       }
     }
   }
@@ -266,26 +264,26 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
   void _fromServerMessageInternal(dynamic input) {
     try {
       final data = input as Object?;
-      final msgFromServer = _messageProcessor.deserializeMessage(data);
-      if (msgFromServer == null) {
-        _debugEventNotificationInternal(
-          SocketLogEventType.warning,
-          'Got NULL message from server!',
-        );
-        return;
-      }
-      final isPingMessage =
-          _messageProcessor.isPongMessageReceived(msgFromServer);
+      final isPingMessage = _messageProcessor.isPongMessageReceived(data);
       if (isPingMessage) {
         _pongReceived();
+      } else {
+        final msgFromServer = _messageProcessor.deserializeMessage(data);
+        if (msgFromServer == null) {
+          _debugEventNotificationInternal(
+            SocketLogEventType.warning,
+            'Got NULL message from server!',
+          );
+          return;
+        }
+        _incomingMessagesController.add(msgFromServer);
       }
 
       if (!isPingMessage || !_skipPingMessages) {
-        _incomingMessagesController.add(msgFromServer);
         _debugEventNotificationInternal(
           SocketLogEventType.fromServerMessage,
           'from server',
-          data: msgFromServer.toString(),
+          data: input.toString(),
         );
       }
     } on Object catch (e) {
@@ -379,7 +377,7 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
         message == null ? msg : '$msg ($message)',
       );
     } else {
-      disconnect(
+      _internalDisconnect(
         'Connection appeared to be closed during pinging '
         'websocket platform status!',
       );
@@ -440,12 +438,18 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
   ///
   @override
   Future<void> disconnect(String reason) async {
+    await _internalDisconnect(reason);
+  }
+
+  /// Separate method is done in order to not to call super.disconnect()
+  /// when [disconnect] is overriden as manual disconnect.
+  Future<void> _internalDisconnect(String reason) async {
     _pingStopwatch.stop();
     if (socketState.status == SocketStatus.disconnected) {
       return;
     }
     await _fromServerMessagesSub?.cancel();
-    await _platformWebSocket.close(3001, 'Requested by user!');
+    await _platformWebSocket.close(3001, reason);
     await Future<void>.delayed(const Duration(milliseconds: 50));
     _notifySocketStatusInternal(SocketStatus.disconnected, reason);
   }
@@ -459,7 +463,7 @@ class WebsocketHandler<T, Y> implements IWebSocketHandler<T, Y> {
     _socketStateController.close();
     _debugEventController.close();
     if (socketState.status != SocketStatus.disconnected) {
-      disconnect('Close called (disposal)');
+      _internalDisconnect('Close called (disposal)');
     }
     _disposed = true;
   }

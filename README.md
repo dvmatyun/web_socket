@@ -24,6 +24,13 @@ void main() async {
   /// For local server it could look like 'ws://127.0.0.1:42627/websocket'
   const websocketConnectionUri = 'wss://ws.postman-echo.com/raw';
   const textMessageToServer = 'Hello server!';
+  const connectionOptions = SocketConnectionOptions(
+    pingIntervalMs: 3000, // send Ping message every 3000 ms
+    timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
+    /// see ping/pong messages in
+    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    skipPingMessages: false,
+  );
 
   /// Example with simple text messages exchanges with server
   /// (not recommended for applications)
@@ -34,11 +41,7 @@ void main() async {
   final textSocketHandler = IWebSocketHandler<String, String>.createClient(
     websocketConnectionUri, // Postman echo ws server
     textSocketProcessor,
-    pingIntervalMs: 3000, // send Ping message every 3000 ms
-    timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
-    skipPingMessages: false,
+    connectionOptions: connectionOptions,
   );
 
   // Listening to server responses:
@@ -83,6 +86,13 @@ void main() async {
   /// For local server it could look like 'ws://127.0.0.1:42627/websocket'
   const websocketConnectionUri = 'wss://ws.postman-echo.com/raw';
   const textMessageToServer = 'Hello server!';
+  const connectionOptions = SocketConnectionOptions(
+    pingIntervalMs: 3000, // send Ping message every 3000 ms
+    timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
+    /// see ping/pong messages in
+    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    skipPingMessages: false,
+  );
 
   /// Complex example:
   /// Example using [ISocketMessage] and [IMessageToServer]
@@ -94,8 +104,7 @@ void main() async {
       IWebSocketHandler<ISocketMessage<Object?>, IMessageToServer>.createClient(
     websocketConnectionUri,
     messageProcessor,
-    pingIntervalMs: 3000, // send Ping message every 3000 ms
-    timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
+    connectionOptions: connectionOptions,
   );
 
   // Listening to debug events inside webSocket
@@ -165,6 +174,13 @@ void main() async {
   /// on the backend side too. On client side it will look like this:
   const websocketLocalExample = 'ws://127.0.0.1:42627/websocket';
   const textMessageToServer = 'Hello server!';
+  const connectionOptions = SocketConnectionOptions(
+    pingIntervalMs: 3000, // send Ping message every 3000 ms
+    timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
+    /// see ping/pong messages in
+    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    skipPingMessages: false,
+  );
 
   final IMessageProcessor<List<int>, List<int>> bytesSocketProcessor =
       SocketSimpleBytesProcessor();
@@ -172,11 +188,7 @@ void main() async {
       IWebSocketHandler<List<int>, List<int>>.createClient(
     websocketLocalExample, // Local ws server
     bytesSocketProcessor,
-    pingIntervalMs: 2000, // send Ping message every 2000 ms
-    timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
-    skipPingMessages: true,
+    connectionOptions: connectionOptions,
   );
 
   // Listening to debug events inside webSocket

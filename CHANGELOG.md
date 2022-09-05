@@ -1,3 +1,9 @@
+# 0.1.0
+
+- working release
+- added reconnection feature for `IWebSocketHandler`
+- base socket functionality moved to `IWebSocketBaseService`
+
 # 0.0.4-dev
 
 - refactoring

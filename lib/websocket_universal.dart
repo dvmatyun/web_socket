@@ -15,7 +15,7 @@ export 'src/websocket_base/interfaces/socket_log_event.dart';
 export 'src/websocket_base/interfaces/socket_message.dart';
 export 'src/websocket_base/interfaces/socket_state.dart';
 export 'src/websocket_base/interfaces/socket_topic.dart';
-export 'src/websocket_base/interfaces/websocket_handler.dart';
+export 'src/websocket_base/interfaces/websocket_base_service.dart';
 
 /// Models:
 export 'src/websocket_base/models/message_to_server_impl.dart';
@@ -31,3 +31,6 @@ export 'src/websocket_base/platform_implementation/platform_websocket.dart';
 export 'src/websocket_base/services/socket_message_processor.dart';
 export 'src/websocket_base/services/socket_simple_bytes_processor.dart';
 export 'src/websocket_base/services/socket_simple_text_processor.dart';
+export 'src/websocket_base/services/websocket_base_service_impl.dart';
+export 'src/websocket_handler/interfaces/websocket_handler.dart';
+export 'src/websocket_handler/models/socket_connection_options.dart';

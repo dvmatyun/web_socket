@@ -55,9 +55,17 @@ class PlatformWebsocketHtml implements IPlatformWebsocket {
   }
 
   @override
-  String get platformStatus => '[ Platform status: readyState= '
-      '${_mapWebsocketCode(_webSocket?.readyState ?? -1)} '
-      '[${_webSocket?.readyState}] ]';
+  String get platformStatus => '[IO  Platform status: ${_socketStatus()} ]';
+
+  String _socketStatus() {
+    if (_webSocket == null) {
+      return "connection hasn't been opened yet!";
+    }
+    if (_webSocket?.readyState == html.WebSocket.OPEN) {
+      return 'connection opened';
+    }
+    return 'connection closed';
+  }
 
   @override
   SocketStatus get socketStatus {
@@ -71,21 +79,6 @@ class PlatformWebsocketHtml implements IPlatformWebsocket {
         return SocketStatus.connected;
       default:
         return SocketStatus.disconnected;
-    }
-  }
-
-  String _mapWebsocketCode(int readyState) {
-    switch (readyState) {
-      case html.WebSocket.CONNECTING:
-        return 'CONNECTING';
-      case html.WebSocket.OPEN:
-        return 'OPEN';
-      case html.WebSocket.CLOSING:
-        return 'CLOSING';
-      case html.WebSocket.CLOSED:
-        return 'CLOSED';
-      default:
-        return 'UNKNOWN';
     }
   }
 }
