@@ -34,3 +34,18 @@ export 'src/websocket_base/services/socket_simple_text_processor.dart';
 export 'src/websocket_base/services/websocket_base_service_impl.dart';
 export 'src/websocket_handler/interfaces/websocket_handler.dart';
 export 'src/websocket_handler/models/socket_connection_options.dart';
+export 'src/websocket_request_manager/interfaces/finished_socket_request.dart';
+export 'src/websocket_request_manager/interfaces/socket_object.dart';
+export 'src/websocket_request_manager/interfaces/socket_request.dart';
+export 'src/websocket_request_manager/interfaces/socket_response.dart';
+
+/// Websocket Request manager Interfaces:
+export 'src/websocket_request_manager/interfaces/timed_message.dart';
+export 'src/websocket_request_manager/interfaces/timed_message.dart';
+export 'src/websocket_request_manager/interfaces/websocket_request_manager.dart';
+export 'src/websocket_request_manager/models/finished_socket_request_impl.dart';
+
+/// Websocket Request manager Models:
+export 'src/websocket_request_manager/models/socket_request_impl.dart';
+export 'src/websocket_request_manager/models/timed_message_impl.dart';
+export 'src/websocket_request_manager/models/timeout_socket_request_impl.dart';
