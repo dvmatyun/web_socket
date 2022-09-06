@@ -416,7 +416,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }
 
   void _recalculateCurrentPing(int newPingValue) {
-    _pingDelayMs = (_pingDelayMs + newPingValue) ~/ 2;
+    _pingDelayMs = (_pingDelayMs + newPingValue * 3) ~/ 4;
   }
 
   void _startPingMeasurement() {

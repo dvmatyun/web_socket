@@ -9,8 +9,26 @@ const String _deserializationErrorText =
 /// and [IMessageToServer]-typed outgoing messages to server
 class SocketMessageProcessor
     implements IMessageProcessor<ISocketMessage<Object?>, IMessageToServer> {
-  late final _pingMsg =
-      serializeMessage(MessageToServerImpl.onlyHost(host: 'ping'));
+  final Object _pingMsg;
+  late final Set<Object> _pongMessages;
+
+  /// Default constructor that sends ping message to server as 'ping' string
+  /// and expects an answer from server as 'ping' or 'pong' string;
+  SocketMessageProcessor()
+      : _pingMsg = 'ping',
+        _pongMessages = <Object>{'ping', 'pong'};
+
+  /// Constructor with custom ping/pong messages
+  /// Remember to implement Equality (==) operation
+  SocketMessageProcessor.single(Object pingMessage, Object expectedPong)
+      : _pingMsg = pingMessage,
+        _pongMessages = <Object>{expectedPong};
+
+  /// Constructor with custom ping/pong messages
+  /// Remember to implement Equality (==) operation
+  SocketMessageProcessor.custom(Object pingMessage, Set<Object> expectedPong)
+      : _pingMsg = pingMessage,
+        _pongMessages = expectedPong;
 
   @override
   ISocketMessage? deserializeMessage(Object? data) {
@@ -44,13 +62,7 @@ class SocketMessageProcessor
 
   @override
   bool isPongMessageReceived(Object? data) {
-    if (data == null) {
-      return false;
-    }
-    if (data is! ISocketMessage) {
-      return false;
-    }
-    if (data.topic.host == 'pong' || data.topic.host == 'ping') {
+    if (_pongMessages.contains(data)) {
       return true;
     }
     return false;

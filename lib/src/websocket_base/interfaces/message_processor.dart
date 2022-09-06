@@ -17,7 +17,8 @@ abstract class IMessageProcessor<Tin, Yout> {
   /// For IO ws data also can be a `List<int>` holding bytes
   Object get pingServerMessage;
 
-  /// Receiving pong message from server.
+  /// Receiving pong message from server. `data` is raw websocket message
+  /// without any processing (Method called before [deserializeMessage])
   /// Recommended to be a fast and cheap function.
   bool isPongMessageReceived(Object? data);
 }

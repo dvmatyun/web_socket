@@ -36,13 +36,22 @@ void main() async {
   // Listening to server responses:
   textSocketHandler.incomingMessagesStream.listen((inMsg) {
     // ignore: avoid_print
-    print('> webSocket  got text message from server: "$inMsg"');
+    print('> webSocket  got text message from server: "$inMsg" '
+        '[ping: ${textSocketHandler.pingDelayMs}]');
+  });
+
+  // Listening to debug events inside webSocket
+  textSocketHandler.logEventStream.listen((debugEvent) {
+    // ignore: avoid_print
+    print('> debug event: ${debugEvent.socketLogEventType}'
+        ' [ping=${debugEvent.pingMs} ms]. Debug message=${debugEvent.message}');
   });
 
   // Listening to outgoing messages:
   textSocketHandler.outgoingMessagesStream.listen((inMsg) {
     // ignore: avoid_print
-    print('> webSocket sent text message to   server: "$inMsg"');
+    print('> webSocket sent text message to   server: "$inMsg" '
+        '[ping: ${textSocketHandler.pingDelayMs}]');
   });
 
   // Connecting to server:

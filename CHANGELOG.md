@@ -1,3 +1,8 @@
+# 0.1.1
+
+- ping calculation changed
+- SocketMessageProcessor ping/pong implementation changed
+
 # 0.1.0
 
 - working release
