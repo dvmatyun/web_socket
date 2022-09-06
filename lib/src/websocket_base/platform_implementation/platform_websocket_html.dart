@@ -12,6 +12,7 @@ IPlatformWebsocket createPlatformWsClient() => PlatformWebsocketHtml();
 class PlatformWebsocketHtml implements IPlatformWebsocket {
   /// Platform specific:
   html.WebSocket? _webSocket;
+  static const String _platform = 'Web';
 
   @override
   String? closeReason;
@@ -55,7 +56,8 @@ class PlatformWebsocketHtml implements IPlatformWebsocket {
   }
 
   @override
-  String get platformStatus => '[IO  Platform status: ${_socketStatus()} ]';
+  String get platformStatus =>
+      '[$_platform Platform status: ${_socketStatus()} ]';
 
   String _socketStatus() {
     if (_webSocket == null) {

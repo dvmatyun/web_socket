@@ -27,6 +27,12 @@ void main() async {
     connectionOptions: connectionOptions,
   );
 
+  // Listening to webSocket status changes
+  textSocketHandler.socketHandlerStateStream.listen((stateEvent) {
+    // ignore: avoid_print
+    print('> status changed to ${stateEvent.status}');
+  });
+
   // Listening to server responses:
   textSocketHandler.incomingMessagesStream.listen((inMsg) {
     // ignore: avoid_print
@@ -37,12 +43,6 @@ void main() async {
   textSocketHandler.outgoingMessagesStream.listen((inMsg) {
     // ignore: avoid_print
     print('> webSocket sent text message to   server: "$inMsg"');
-  });
-
-  // Listening to webSocket status changes
-  textSocketHandler.socketHandlerStateStream.listen((stateEvent) {
-    // ignore: avoid_print
-    print('> status changed to ${stateEvent.status}');
   });
 
   // Connecting to server:
