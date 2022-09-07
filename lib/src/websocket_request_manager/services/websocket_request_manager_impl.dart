@@ -2,13 +2,16 @@ import 'dart:async';
 
 import '../../../websocket_universal.dart';
 
+///
+/// Handles websocket request on logic level using [ISocketMessage]
+/// intraface. Times websocket requests.
+///
 class WebSocketRequestManager implements IWebSocketRequestManager {
-  static const _stackTrace = '[AsyncSocketHandler] ';
-
   final IWebSocketHandler<ISocketMessage, ISocketMessage> _webSocketHandler;
 
   /// Streams:
   late final StreamSubscription _webSocketSub;
+  late final StreamSubscription _webSocketPingSub;
   final _decodedSc = StreamController<ITimedMessage>.broadcast();
   final _finishedRequestSc =
       StreamController<IFinishedSocketRequest>.broadcast();
@@ -23,17 +26,23 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
   @override
   Stream<int> get pingMsStream => _pingSc.stream;
+  @override
+  int get pingDelayMs => _lastPingMs;
+
+  final ISocketManagerMiddleware _middleware;
 
   /// Constructor
   WebSocketRequestManager({
     required IWebSocketHandler<ISocketMessage, ISocketMessage> webSocketHandler,
-    required SendSocketMessageFunc sendSocketMessageFunc,
-    required DecodeSocketMessageFunc decodeSocketMessageFunc,
+    required ISocketManagerMiddleware middleware,
   })  : _webSocketHandler = webSocketHandler,
-        sendSocketMessageDelegate = sendSocketMessageFunc,
-        decodeSocketMessageDelegate = decodeSocketMessageFunc {
+        _middleware = middleware,
+        _lastPingMs = webSocketHandler.pingDelayMs {
     _webSocketSub =
         _webSocketHandler.incomingMessagesStream.listen(_socketListener);
+    _webSocketPingSub = _webSocketHandler.logEventStream
+        .where((e) => e.socketLogEventType == SocketLogEventType.pong)
+        .listen((p) => _updatePing(p.pingMs));
   }
 
   final _notFinishedSocketRequests = <String, TimeoutSocketRequest>{};
@@ -44,15 +53,11 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
   final _storedIncomingMessaged = <String, ITimedMessage>{};
 
-  SendSocketMessageFunc? sendSocketMessageDelegate;
-  DecodeSocketMessageFunc? decodeSocketMessageDelegate;
-
   @override
   void requestData(ISocketRequest socketRequest) {
-    if (sendSocketMessageDelegate == null) {
-      throw Exception('sendSocketMessageDelegate is not set!');
-    }
-    sendSocketMessageDelegate!(socketRequest.requestMessage, _webSocketHandler);
+    final outMessage =
+        _middleware.encodeSocketMessage(socketRequest.requestMessage);
+    _webSocketHandler.sendMessage(outMessage);
     if (socketRequest.responseTopics.isEmpty) {
       return;
     }
@@ -73,10 +78,7 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   }
 
   void _socketListener(ISocketMessage socketMessage) {
-    if (decodeSocketMessageDelegate == null) {
-      throw Exception('decodeSocketMessageDelegate is not set!');
-    }
-    final data = decodeSocketMessageDelegate!(socketMessage);
+    final data = _middleware.decodeSocketMessage(socketMessage);
     if (data == null) {
       return;
     }
@@ -106,11 +108,16 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
           request: notFinishedRequest,
           dataDictionary: dataDictionary,
         );
-        _pingSc.add(finishedRequest.msElapsed);
-        //l.v('[decodeSocketMessageDelegate] _finishedRequestSc: ${finishedRequest.msElapsed}');
+        _updatePing(finishedRequest.msElapsed);
         _finishedRequestSc.add(finishedRequest);
       }
     }
+  }
+
+  int _lastPingMs = 0;
+  void _updatePing(int newPingMs) {
+    _lastPingMs = (newPingMs + _lastPingMs) ~/ 2;
+    _pingSc.add(_lastPingMs);
   }
 
   @override
@@ -150,6 +157,7 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   @override
   void close() {
     _webSocketSub.cancel();
+    _webSocketPingSub.cancel();
     _decodedSc.close();
     _finishedRequestSc.close();
     _pingSc.close();

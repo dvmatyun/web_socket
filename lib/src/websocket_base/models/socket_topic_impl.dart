@@ -1,7 +1,10 @@
+import 'package:meta/meta.dart';
+
 import '../interfaces/socket_topic.dart';
 
 /// [ISocketTopic] implementation to route websocket message data.
 /// Used same way as URL/URI in simple HTTP requests
+@immutable
 class SocketTopicImpl implements ISocketTopic {
   /// Symbol that seprates [pathSegments] in [path]
   static const String pathDelimiter = '/';
@@ -74,6 +77,12 @@ class SocketTopicImpl implements ISocketTopic {
 
   @override
   String toString() => path;
+
+  @override
+  bool operator ==(Object other) => other is ISocketTopic && other.path == path;
+
+  @override
+  int get hashCode => path.hashCode;
 }
 
 /// Deserialize [ISocketTopic] from JSON.

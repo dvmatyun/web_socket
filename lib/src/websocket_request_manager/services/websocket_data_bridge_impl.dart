@@ -2,6 +2,8 @@ import 'dart:async';
 
 import '../../../websocket_universal.dart';
 
+/// Data bridge between sending [ISocketRequest] and getting useful data from
+/// websocket
 class WebSocketDataBridge {
   final IWebSocketRequestManager _requestManager;
 
@@ -15,7 +17,6 @@ class WebSocketDataBridge {
     _requestManager.requestData(request);
   }
 
-  /// Request entity that has request/response topic
   Future<T> singleRequest<T>(ISocketRequest request) async {
     final timedResult = await singleRequestFull<T>(request);
     return timedResult.data;
@@ -23,20 +24,19 @@ class WebSocketDataBridge {
 
   Future<ITimedMessage<T>> singleRequestFull<T>(ISocketRequest request) async {
     const method = 'singleRequestFull';
-    if (request.responseTopics.isEmpty) {
-      throw ArgumentError('$_stackTrace $method: response '
-          'topics are empty!');
-    }
-    final responsePath = request.responseTopics.first.path;
+    final responsePath = request.firstTopicOrMirror.path;
     try {
       final task = _requestManager.decodedMessagesStream
           .firstWhere(
-            (e) => e.socketMessage.topic.path == responsePath,
+            (e) => e.topic.path == responsePath,
           )
           .timeout(Duration(milliseconds: request.timeoutMs));
       _requestManager.requestData(request);
       final result = await task;
-      return TimedMessage.fromMessage(msg: result);
+      if (result.data is T) {
+        return TimedMessage.fromMessage(msg: result);
+      }
+      throw Exception('$_stackTrace $method : received data is wrongly typed!');
     } on TimeoutException {
       final errorMessage = '$_stackTrace $method ${request.timeoutMs} ms '
           'timeout passed awaiting for RESPONSE topic path: [$responsePath]';
@@ -83,7 +83,7 @@ class WebSocketDataBridge {
     }
     _storedStreams[responsePath] = _requestManager.decodedMessagesStream
         .where(
-          (e) => e.socketMessage.topic.path == responsePath,
+          (e) => e.topic.path == responsePath,
         )
         .map<T>((event) => event.data as T);
 

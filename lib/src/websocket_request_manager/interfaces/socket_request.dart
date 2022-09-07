@@ -13,4 +13,10 @@ abstract class ISocketRequest {
   /// Multiple answers. When all answer topics are received,
   /// then the request is considered successful.
   Set<ISocketTopic> get responseTopics;
+
+  /// Gets first topic from [responseTopics] or mirrors topic
+  /// from [requestMessage]. Useful when request/response pair has same
+  /// topics, e.g. we request from server 'game/get' and server responds with
+  /// data using same 'game/get' topic
+  ISocketTopic get firstTopicOrMirror;
 }
