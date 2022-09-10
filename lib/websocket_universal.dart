@@ -51,6 +51,7 @@ export 'src/websocket_request_manager/models/custom_game_model.dart';
 export 'src/websocket_request_manager/models/socket_request_impl.dart';
 export 'src/websocket_request_manager/models/timed_message_impl.dart';
 export 'src/websocket_request_manager/models/timeout_socket_request.dart';
+export 'src/websocket_request_manager/services/base_socket_decoder.dart';
 
 /// Websocket Request manager Services:
 export 'src/websocket_request_manager/services/socket_manager_middleware_impl.dart';
