@@ -1,7 +1,7 @@
 import '../../../websocket_universal.dart';
 
-/// [ITimedMessage] implementation with timestamp
-class TimedMessage<T> implements ITimedMessage<T>, ISocketMessage<T> {
+/// [ITimedSocketResponse] implementation with timestamp
+class TimedMessage<T> implements ITimedSocketResponse<T>, ISocketMessage<T> {
   @override
   final DateTime timestamp;
   @override
@@ -19,7 +19,7 @@ class TimedMessage<T> implements ITimedMessage<T>, ISocketMessage<T> {
         topic = socketMessage.topic;
 
   /// Copy from another message
-  TimedMessage.fromMessage({required ITimedMessage msg})
+  TimedMessage.fromMessage({required ITimedSocketResponse msg})
       : timestamp = msg.timestamp,
         data = msg.data as T,
         error = msg.error,

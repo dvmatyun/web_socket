@@ -17,10 +17,19 @@ class CustomGameModel {
     required this.playersAmount,
   });
 
+  /// Topic1 to get game model
+  static const String topic1 = 'game';
+
+  /// Topic1 to get game models list
+  static const String topic1List = 'game-list';
+
   /// from json
   factory CustomGameModel.fromJson(Map<String, dynamic> json) =>
       _$CustomGameModelFromJson(json);
 
   /// to json
   Map<String, dynamic> toJson() => _$CustomGameModelToJson(this);
+
+  @override
+  String toString() => 'CustomGameModel : {$name, $playersAmount}';
 }

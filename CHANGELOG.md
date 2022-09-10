@@ -1,3 +1,10 @@
+# 0.2.0
+
+- WebSocketRequestManager added
+- WebSocketDataBridge added
+- timeout for requests
+- composite requests with multiple responses handling
+
 # 0.1.1
 
 - ping calculation changed

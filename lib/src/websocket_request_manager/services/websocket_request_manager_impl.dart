@@ -12,16 +12,16 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   /// Streams:
   late final StreamSubscription _webSocketSub;
   late final StreamSubscription _webSocketPingSub;
-  final _decodedSc = StreamController<ITimedMessage>.broadcast();
+  final _decodedSc = StreamController<ITimedSocketResponse>.broadcast();
   final _finishedRequestSc =
-      StreamController<IFinishedSocketRequest>.broadcast();
+      StreamController<ICompositeSocketResponse>.broadcast();
   final _pingSc = StreamController<int>.broadcast();
 
   @override
-  Stream<ITimedMessage> get decodedMessagesStream => _decodedSc.stream;
+  Stream<ITimedSocketResponse> get decodedMessagesStream => _decodedSc.stream;
 
   @override
-  Stream<IFinishedSocketRequest> get finishedRequestsStream =>
+  Stream<ICompositeSocketResponse> get finishedRequestsStream =>
       _finishedRequestSc.stream;
 
   @override
@@ -51,7 +51,7 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   final _awaitedTopics = <String, List<String>>{};
   final _flaggedTopics = <String, DateTime>{};
 
-  final _storedIncomingMessaged = <String, ITimedMessage>{};
+  final _storedIncomingMessaged = <String, ITimedSocketResponse>{};
 
   @override
   void requestData(ISocketRequest socketRequest) {
@@ -104,9 +104,9 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
           notFinishedRequest,
           _storedIncomingMessaged,
         );
-        final finishedRequest = FinishedSocketRequest(
+        final finishedRequest = CompositeSocketResponse(
           request: notFinishedRequest,
-          dataDictionary: dataDictionary,
+          dataCached: dataDictionary,
         );
         _updatePing(finishedRequest.msElapsed);
         _finishedRequestSc.add(finishedRequest);
@@ -121,14 +121,14 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   }
 
   @override
-  ITimedMessage? getStoredDecodedMessage(String key) =>
+  ITimedSocketResponse? getStoredDecodedMessage(String key) =>
       _storedIncomingMessaged[key];
 
   bool _allRequestedTopicsValid(
     TimeoutSocketRequest request,
     Map<String, DateTime> flaggedTopics,
   ) {
-    for (final t in request.socketRequest.responseTopics) {
+    for (final t in request.responseTopics) {
       final flaggedTime = flaggedTopics[t.path];
       if (flaggedTime == null ||
           (flaggedTime.compareTo(request.timeRequested) < 0)) {
@@ -140,11 +140,11 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
   Map<String, Object> _assembleDataDictionary(
     TimeoutSocketRequest request,
-    Map<String, ITimedMessage> flaggedData,
+    Map<String, ITimedSocketResponse> flaggedData,
   ) {
     final dataDictionary = <String, Object>{};
     final debugSb = StringBuffer();
-    for (final t in request.socketRequest.responseTopics) {
+    for (final t in request.responseTopics) {
       final timedMessage = flaggedData[t.path];
       if (timedMessage != null) {
         dataDictionary[t.path] = timedMessage.data as Object;

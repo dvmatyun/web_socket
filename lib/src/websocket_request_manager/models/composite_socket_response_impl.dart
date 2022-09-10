@@ -1,18 +1,19 @@
 import '../../../websocket_universal.dart';
 
-class FinishedSocketRequest implements IFinishedSocketRequest {
+/// Composite server response implemntation
+class CompositeSocketResponse implements ICompositeSocketResponse {
   @override
   final ISocketRequest socketRequest;
   @override
   final DateTime timeRequested;
-
+  @override
+  final Map<String, Object> dataCached;
   @override
   final int msElapsed;
-  final Map<String, Object> dataDictionary;
 
   @override
   T getData<T>() {
-    for (final d in dataDictionary.values) {
+    for (final d in dataCached.values) {
       if (d is T) {
         return d as T;
       }
@@ -20,14 +21,11 @@ class FinishedSocketRequest implements IFinishedSocketRequest {
     throw Exception('Data of requested type ${T.toString()} not found!');
   }
 
-  FinishedSocketRequest({
+  /// Constructor
+  CompositeSocketResponse({
     required TimeoutSocketRequest request,
-    required this.dataDictionary,
-  })  : socketRequest = request.socketRequest,
+    required this.dataCached,
+  })  : socketRequest = request,
         timeRequested = request.timeRequested,
         msElapsed = request.msElapsed;
-
-  @override
-  // TODO: implement responses
-  Map<String, ISocketMessage> get responses => throw UnimplementedError();
 }

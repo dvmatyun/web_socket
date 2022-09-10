@@ -4,25 +4,30 @@ import '../../../websocket_universal.dart';
 
 /// Data bridge between sending [ISocketRequest] and getting useful data from
 /// websocket
-class WebSocketDataBridge {
+class WebSocketDataBridge implements IWebSocketDataBridge {
   final IWebSocketRequestManager _requestManager;
 
   static const _stackTrace = '[RequestSocketDataHandler] ';
 
-  WebSocketDataBridge({
-    required IWebSocketRequestManager asyncSocketHandler,
-  }) : _requestManager = asyncSocketHandler;
+  /// Default constructor
+  WebSocketDataBridge(
+    IWebSocketRequestManager requestManager,
+  ) : _requestManager = requestManager;
 
-  void requestData(ISocketRequest request) {
-    _requestManager.requestData(request);
-  }
+  @override
+  void requestData(ISocketRequest request) =>
+      _requestManager.requestData(request);
 
+  @override
   Future<T> singleRequest<T>(ISocketRequest request) async {
     final timedResult = await singleRequestFull<T>(request);
     return timedResult.data;
   }
 
-  Future<ITimedMessage<T>> singleRequestFull<T>(ISocketRequest request) async {
+  @override
+  Future<ITimedSocketResponse<T>> singleRequestFull<T>(
+    ISocketRequest request,
+  ) async {
     const method = 'singleRequestFull';
     final responsePath = request.firstTopicOrMirror.path;
     try {
@@ -47,10 +52,11 @@ class WebSocketDataBridge {
     }
   }
 
-  Future<IFinishedSocketRequest> singleFinishedSocketRequest<T>(
+  @override
+  Future<ICompositeSocketResponse> compositeRequest(
     ISocketRequest request,
   ) async {
-    const method = 'singleFinishedSocketRequest';
+    const method = 'finishedRequest';
     if (request.responseTopics.isEmpty) {
       throw ArgumentError('$_stackTrace $method: response '
           'topics are empty!');
@@ -75,6 +81,8 @@ class WebSocketDataBridge {
   }
 
   final _storedStreams = <String, Stream>{};
+
+  @override
   Stream<T> getStream<T>(ISocketTopic topic) {
     final responsePath = topic.path;
 
@@ -90,6 +98,7 @@ class WebSocketDataBridge {
     return _storedStreams[responsePath]! as Stream<T>;
   }
 
+  @override
   T? getStored<T>(ISocketTopic topic) {
     final responsePath = topic.path;
     final msg = _requestManager.getStoredDecodedMessage(responsePath);
@@ -99,6 +108,7 @@ class WebSocketDataBridge {
     return msg.data as T;
   }
 
+  @override
   Future<T> tryGetStored<T>(ISocketRequest request) async {
     const method = 'tryGetStored';
     if (request.responseTopics.isEmpty) {
@@ -107,7 +117,10 @@ class WebSocketDataBridge {
     }
     final response = request.responseTopics.first.path;
     final msg = _requestManager.getStoredDecodedMessage(response);
-    if (msg != null) {
+    if (msg != null &&
+        (request.cacheTimeMs == null ||
+            DateTime.now().difference(msg.timestamp).inMilliseconds <
+                (request.cacheTimeMs ?? 0))) {
       return msg.data as T;
     }
     return singleRequest<T>(request);

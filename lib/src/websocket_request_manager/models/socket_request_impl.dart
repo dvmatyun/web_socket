@@ -9,11 +9,15 @@ class SocketRequest implements ISocketRequest {
   @override
   final Set<ISocketTopic> responseTopics;
 
+  @override
+  final int? cacheTimeMs;
+
   /// Default constructor
   const SocketRequest({
     required this.requestMessage,
-    this.timeoutMs = 2000,
+    this.timeoutMs = 5000,
     this.responseTopics = const {},
+    this.cacheTimeMs,
   });
 
   @override

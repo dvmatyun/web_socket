@@ -36,17 +36,24 @@ export 'src/websocket_handler/interfaces/websocket_handler.dart';
 export 'src/websocket_handler/models/socket_connection_options.dart';
 
 /// Websocket Request manager Interfaces:
-export 'src/websocket_request_manager/interfaces/finished_socket_request.dart';
+export 'src/websocket_request_manager/interfaces/composite_socket_response.dart';
 export 'src/websocket_request_manager/interfaces/socket_manager_middleware.dart';
-export 'src/websocket_request_manager/interfaces/socket_object.dart';
 export 'src/websocket_request_manager/interfaces/socket_request.dart';
 export 'src/websocket_request_manager/interfaces/socket_response.dart';
-export 'src/websocket_request_manager/interfaces/timed_message.dart';
-export 'src/websocket_request_manager/interfaces/timed_message.dart';
+export 'src/websocket_request_manager/interfaces/timed_socket_response.dart';
+export 'src/websocket_request_manager/interfaces/timed_socket_response.dart';
+export 'src/websocket_request_manager/interfaces/websocket_data_bridge.dart';
 export 'src/websocket_request_manager/interfaces/websocket_request_manager.dart';
-export 'src/websocket_request_manager/models/finished_socket_request_impl.dart';
+export 'src/websocket_request_manager/models/composite_socket_response_impl.dart';
+export 'src/websocket_request_manager/models/custom_game_model.dart';
 
 /// Websocket Request manager Models:
 export 'src/websocket_request_manager/models/socket_request_impl.dart';
 export 'src/websocket_request_manager/models/timed_message_impl.dart';
-export 'src/websocket_request_manager/models/timeout_socket_request_impl.dart';
+export 'src/websocket_request_manager/models/timeout_socket_request.dart';
+
+/// Websocket Request manager Services:
+export 'src/websocket_request_manager/services/socket_manager_middleware_impl.dart';
+export 'src/websocket_request_manager/services/websocket_data_bridge_impl.dart';
+export 'src/websocket_request_manager/services/websocket_data_bridge_impl.dart';
+export 'src/websocket_request_manager/services/websocket_request_manager_impl.dart';
