@@ -1,3 +1,10 @@
+# 0.2.6
+
+- hotfix
+
+# 0.2.5
+
+- hotfix
 # 0.2.4
 
 - data is Nullable now
