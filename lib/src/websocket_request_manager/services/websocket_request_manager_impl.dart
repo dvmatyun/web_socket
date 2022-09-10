@@ -79,9 +79,6 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
   void _socketListener(ISocketMessage socketMessage) {
     final data = _middleware.decodeSocketMessage(socketMessage);
-    if (data == null) {
-      return;
-    }
 
     final timedMessage = TimedMessage(data: data, socketMessage: socketMessage);
     _storedIncomingMessaged[socketMessage.topic.path] = timedMessage;

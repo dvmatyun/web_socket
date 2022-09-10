@@ -10,7 +10,7 @@ abstract class ISocketMessage<T> {
   ISocketTopic get topic;
 
   /// Generic data that message carries
-  T get data;
+  T? get data;
 
   /// Property to report an error
   String? get error;

@@ -6,7 +6,7 @@ abstract class IWebSocketDataBridge {
   void requestData(ISocketRequest request);
 
   /// Request entity that has request/response topic
-  Future<T> singleRequest<T>(ISocketRequest request);
+  Future<T?> singleRequest<T>(ISocketRequest request);
 
   /// Request wrapped in [ITimedSocketResponse] entity that has request/response topic
   Future<ITimedSocketResponse<T>> singleRequestFull<T>(ISocketRequest request);
@@ -25,5 +25,5 @@ abstract class IWebSocketDataBridge {
   T? getStored<T>(ISocketTopic topic);
 
   /// Get last received data value or request it
-  Future<T> tryGetStored<T>(ISocketRequest request);
+  Future<T?> tryGetStored<T>(ISocketRequest request);
 }

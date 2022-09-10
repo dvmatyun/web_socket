@@ -19,7 +19,7 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
       _requestManager.requestData(request);
 
   @override
-  Future<T> singleRequest<T>(ISocketRequest request) async {
+  Future<T?> singleRequest<T>(ISocketRequest request) async {
     final timedResult = await singleRequestFull<T>(request);
     return timedResult.data;
   }
@@ -38,7 +38,7 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
           .timeout(Duration(milliseconds: request.timeoutMs));
       _requestManager.requestData(request);
       final result = await task;
-      if (result.data is T) {
+      if (result.data is T?) {
         return TimedMessage.fromMessage(msg: result);
       }
       throw Exception('$_stackTrace $method : received data is wrongly typed!');
@@ -109,7 +109,7 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
   }
 
   @override
-  Future<T> tryGetStored<T>(ISocketRequest request) async {
+  Future<T?> tryGetStored<T>(ISocketRequest request) async {
     const method = 'tryGetStored';
     if (request.responseTopics.isEmpty) {
       throw ArgumentError('$_stackTrace $method: response '

@@ -1,3 +1,7 @@
+# 0.2.4
+
+- data is Nullable now
+
 # 0.2.3
 
 - added `getResponsesStream` method
