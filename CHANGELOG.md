@@ -1,3 +1,7 @@
+# 0.2.2
+
+- Hotfix
+
 # 0.2.1
 
 - BaseDecoder added

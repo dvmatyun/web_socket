@@ -1,5 +1,4 @@
 import '../../../websocket_universal.dart';
-import 'base_socket_decoder.dart';
 
 /// Middleware implementation between socket handler and manager
 class SocketManagerMiddleware implements ISocketManagerMiddleware {
