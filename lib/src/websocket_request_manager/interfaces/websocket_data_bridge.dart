@@ -18,6 +18,9 @@ abstract class IWebSocketDataBridge {
   /// Get stream of data for specific topic
   Stream<T> getStream<T>(ISocketTopic topic);
 
+  /// Get stream of response messages for specific topic
+  Stream<ITimedSocketResponse<T>> getResponsesStream<T>(ISocketTopic topic);
+
   /// Get last received data value or null
   T? getStored<T>(ISocketTopic topic);
 

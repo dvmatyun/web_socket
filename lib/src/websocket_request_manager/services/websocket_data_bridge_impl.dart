@@ -125,4 +125,21 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
     }
     return singleRequest<T>(request);
   }
+
+  @override
+  Stream<ITimedSocketResponse<T>> getResponsesStream<T>(ISocketTopic topic) {
+    final responsePath = topic.path;
+    final streamKey = 't.${topic.path}';
+
+    if (_storedStreams.containsKey(streamKey)) {
+      return _storedStreams[streamKey]! as Stream<ITimedSocketResponse<T>>;
+    }
+    _storedStreams[streamKey] = _requestManager.decodedMessagesStream
+        .where(
+          (e) => e.topic.path == responsePath,
+        )
+        .map<T>((event) => event.data as T);
+
+    return _storedStreams[streamKey]! as Stream<ITimedSocketResponse<T>>;
+  }
 }

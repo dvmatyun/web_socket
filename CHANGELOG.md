@@ -1,3 +1,7 @@
+# 0.2.3
+
+- added `getResponsesStream` method
+
 # 0.2.2
 
 - Hotfix
