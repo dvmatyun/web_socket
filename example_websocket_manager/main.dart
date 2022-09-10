@@ -48,7 +48,7 @@ void main() async {
   }
 
   // Sending message with routing path 'test' and simple JSON payload:
-  final requestGame = MessageToServerImpl.duo(
+  final requestGame = MessageToServer.duo(
     host: TestDecoder.host,
     topic1: CustomGameModel.topic1,
     data: jsonEncode(
@@ -66,7 +66,7 @@ void main() async {
   // ignore: avoid_print
   print('Got result: ${result.data}');
 
-  final outMsgList = MessageToServerImpl.duo(
+  final outMsgList = MessageToServer.duo(
     host: TestDecoder.host,
     topic1: CustomGameModel.topic1List,
     data: jsonEncode([

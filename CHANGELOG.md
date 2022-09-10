@@ -1,3 +1,8 @@
+# 0.3.0
+
+- changed interfaces
+- fixes
+
 # 0.2.6
 
 - hotfix

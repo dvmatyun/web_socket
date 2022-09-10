@@ -10,7 +10,7 @@ void main() {
 
     test('serializeMessage', () {
       final processor = SocketMessageProcessor();
-      final message = MessageToServerImpl(
+      final message = MessageToServer(
         topic: SocketTopicImpl(orderedPathSegments: const ['ping']),
         data: 'data',
         error: 'error',

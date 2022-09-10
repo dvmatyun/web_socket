@@ -3,7 +3,7 @@ import '../../../websocket_universal.dart';
 /// WebSocket request to server
 class SocketRequest implements ISocketRequest {
   @override
-  final ISocketMessage requestMessage;
+  final IMessageToServer requestMessage;
   @override
   final int timeoutMs;
   @override

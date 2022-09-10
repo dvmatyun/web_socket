@@ -4,7 +4,7 @@ import '../../../websocket_universal.dart';
 /// server in [timeoutMs] interval
 abstract class ISocketRequest {
   /// Request to server
-  ISocketMessage get requestMessage;
+  IMessageToServer get requestMessage;
 
   /// Timeout time in milliseconds. If this time has passed and all required
   /// [responseTopics] are not received - request fails.
