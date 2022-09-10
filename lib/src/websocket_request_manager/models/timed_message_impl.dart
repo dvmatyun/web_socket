@@ -5,7 +5,7 @@ class TimedMessage<T> implements ITimedSocketResponse<T>, ISocketMessage<T> {
   @override
   final DateTime timestamp;
   @override
-  final T data;
+  final T? data;
   @override
   final String? error;
 
