@@ -5,7 +5,7 @@ class SocketRequest implements ISocketRequest {
   @override
   final IMessageToServer requestMessage;
   @override
-  final int timeoutMs;
+  final int? timeoutMs;
   @override
   final Set<ISocketTopic> responseTopics;
 
@@ -19,6 +19,13 @@ class SocketRequest implements ISocketRequest {
     this.responseTopics = const {},
     this.cacheTimeMs,
   });
+
+  /// Socket request with same topics as requested
+  SocketRequest.mirror({
+    required this.requestMessage,
+    this.timeoutMs = 5000,
+    this.cacheTimeMs,
+  }) : responseTopics = {requestMessage.topic};
 
   @override
   ISocketTopic get firstTopicOrMirror =>

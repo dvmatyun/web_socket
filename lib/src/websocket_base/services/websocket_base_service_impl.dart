@@ -144,10 +144,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
       SocketStatus.connecting,
       _connectingPhrase(baseUrl),
     );
-    await _platformWebSocket
+    final isConnected = await _platformWebSocket
         .connect(_connectUrlBase)
         .timeout(Duration(milliseconds: _timeoutConnectionMs));
-    return true;
+    return isConnected;
   }
 
   Future<void> _connectionSuccessful() async {
@@ -191,8 +191,12 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   /// CONNECTED
   ///
   @override
-  void sendMessage(Y messageToServer) {
+  bool sendMessage(Y messageToServer) {
+    if (!_checkPlatformIsConnected('sendMessage')) {
+      return false;
+    }
     _sendMessageInternal(messageToServer, false);
+    return true;
   }
 
   void _sendMessageInternal(Object? data, bool isPing) {
@@ -357,6 +361,13 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }
 
   bool _checkPlatformIsConnected(String whoChecks) {
+    if (_pingStopwatch.elapsedMilliseconds > 2000) {
+      _debugEventNotificationInternal(
+        SocketLogEventType.ping,
+        '$whoChecks : disconnected due to high ping',
+      );
+      return false;
+    }
     if (_platformWebSocket.socketStatus != SocketStatus.connected) {
       _debugEventNotificationInternal(
         SocketLogEventType.ping,
@@ -416,7 +427,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }
 
   void _recalculateCurrentPing(int newPingValue) {
-    _pingDelayMs = (_pingDelayMs + newPingValue * 3) ~/ 4;
+    _pingDelayMs = (_pingDelayMs + newPingValue) ~/ 2;
   }
 
   void _startPingMeasurement() {
@@ -428,7 +439,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     if (!_pingStopwatch.isRunning) {
       return;
     }
-    _pingDelayMs = _pingStopwatch.elapsedMilliseconds;
+    _recalculateCurrentPing(_pingStopwatch.elapsedMilliseconds);
     _resetStopwatch();
     _isPongReceived = true;
   }
@@ -450,6 +461,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     }
     await _fromServerMessagesSub?.cancel();
     await _platformWebSocket.close(3001, reason);
+    _recalculateCurrentPing(9999);
     await Future<void>.delayed(const Duration(milliseconds: 50));
     _notifySocketStatusInternal(SocketStatus.disconnected, reason);
   }

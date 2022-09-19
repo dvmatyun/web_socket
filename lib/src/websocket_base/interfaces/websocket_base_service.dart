@@ -36,7 +36,7 @@ abstract class IWebSocketBaseService<Tin, Yout> {
   Future<void> disconnect(String reason);
 
   /// Send generic message to server
-  void sendMessage(Yout messageToServer);
+  bool sendMessage(Yout messageToServer);
 
   /// Dispose websocket handler (handler can not be used after calling [close])
   /// You MUST create new WebSocket object in order to handle new events

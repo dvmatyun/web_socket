@@ -10,7 +10,8 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   final IWebSocketHandler<ISocketMessage, ISocketMessage> _webSocketHandler;
 
   /// Streams:
-  late final StreamSubscription _webSocketSub;
+  late final StreamSubscription _webSocketInMsgSub;
+  late final StreamSubscription _webSocketStatesSub;
   late final StreamSubscription _webSocketPingSub;
   final _decodedSc = StreamController<ITimedSocketResponse>.broadcast();
   final _finishedRequestSc =
@@ -38,11 +39,20 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   })  : _webSocketHandler = webSocketHandler,
         _middleware = middleware,
         _lastPingMs = webSocketHandler.pingDelayMs {
-    _webSocketSub =
+    _webSocketInMsgSub =
         _webSocketHandler.incomingMessagesStream.listen(_socketListener);
     _webSocketPingSub = _webSocketHandler.logEventStream
-        .where((e) => e.socketLogEventType == SocketLogEventType.pong)
+        .where(
+          (e) => [
+            SocketLogEventType.pong,
+            SocketLogEventType.ping,
+            SocketLogEventType.socketStateChanged
+          ].contains(e.socketLogEventType),
+        )
         .listen((p) => _updatePing(p.pingMs));
+    _webSocketStatesSub =
+        _webSocketHandler.socketHandlerStateStream.listen(_socketStateListener);
+    _checkNotFinishedRequests();
   }
 
   final _notFinishedSocketRequests = <String, TimeoutSocketRequest>{};
@@ -55,15 +65,22 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
   @override
   void requestData(ISocketRequest socketRequest) {
-    final outMessage =
-        _middleware.encodeSocketMessage(socketRequest.requestMessage);
-    _webSocketHandler.sendMessage(outMessage);
-    if (socketRequest.responseTopics.isEmpty) {
+    if (_webSocketHandler.socketHandlerState.status != SocketStatus.connected ||
+        socketRequest.responseTopics.isNotEmpty) {
+      _notFinishedSocketRequests[socketRequest.requestMessage.topic.path] =
+          TimeoutSocketRequest(socketRequest: socketRequest);
+    }
+    if (_webSocketHandler.socketHandlerState.status != SocketStatus.connected) {
       return;
     }
+    final outMessage =
+        _middleware.encodeSocketMessage(socketRequest.requestMessage);
+    final isSent = _webSocketHandler.sendMessage(outMessage);
+    if (!isSent) {
+      _notFinishedSocketRequests[socketRequest.requestMessage.topic.path] =
+          TimeoutSocketRequest(socketRequest: socketRequest);
+    }
 
-    _notFinishedSocketRequests[socketRequest.requestMessage.topic.path] =
-        TimeoutSocketRequest(socketRequest: socketRequest);
     for (final t in socketRequest.responseTopics) {
       if (_awaitedTopics.containsKey(t.path)) {
         if (!(_awaitedTopics[t.path]
@@ -76,6 +93,47 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
       }
     }
   }
+
+  /// Request data again on reconnection: -------------------------
+  bool _isClosed = false;
+  Future<void> _checkNotFinishedRequests() async {
+    while (!_isClosed) {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      await _requestAllNotFinishedRequests();
+    }
+  }
+
+  void _socketStateListener(ISocketState ss) {
+    if (ss.status == SocketStatus.connected) {
+      _requestAllNotFinishedRequests();
+    }
+  }
+
+  final _requestFailedTimes = <String, int>{};
+  Future<void> _requestAllNotFinishedRequests() async {
+    if (_webSocketHandler.socketState.status != SocketStatus.connected) {
+      return;
+    }
+    final keys = _notFinishedSocketRequests.keys.toList(growable: false);
+    for (final k in keys) {
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      final value = _notFinishedSocketRequests[k];
+      final timeoutThreshold = (value?.timeoutMs ?? 2000) ~/ 4;
+      if (value != null && value.msElapsed > timeoutThreshold) {
+        _notFinishedSocketRequests.remove(k);
+        if (_requestFailedTimes.containsKey(k)) {
+          _requestFailedTimes[k] = _requestFailedTimes[k]! + 1;
+        } else {
+          _requestFailedTimes[k] = 1;
+        }
+        if (_requestFailedTimes[k]! < 20) {
+          requestData(value);
+        }
+      }
+    }
+  }
+
+  /// Request data again on reconnection;
 
   void _socketListener(ISocketMessage socketMessage) {
     final data = _middleware.decodeSocketMessage(socketMessage);
@@ -106,6 +164,8 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
           dataCached: dataDictionary,
         );
         _updatePing(finishedRequest.msElapsed);
+        _requestFailedTimes[requestKey] = 0;
+        _notFinishedSocketRequests.remove(requestKey);
         _finishedRequestSc.add(finishedRequest);
       }
     }
@@ -113,7 +173,7 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
   int _lastPingMs = 0;
   void _updatePing(int newPingMs) {
-    _lastPingMs = (newPingMs + _lastPingMs) ~/ 2;
+    _lastPingMs = (newPingMs + _lastPingMs * 3) ~/ 4;
     _pingSc.add(_lastPingMs);
   }
 
@@ -135,16 +195,16 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
     return true;
   }
 
-  Map<String, Object> _assembleDataDictionary(
+  Map<String, Object?> _assembleDataDictionary(
     TimeoutSocketRequest request,
     Map<String, ITimedSocketResponse> flaggedData,
   ) {
-    final dataDictionary = <String, Object>{};
+    final dataDictionary = <String, Object?>{};
     final debugSb = StringBuffer();
     for (final t in request.responseTopics) {
       final timedMessage = flaggedData[t.path];
       if (timedMessage != null) {
-        dataDictionary[t.path] = timedMessage.data as Object;
+        dataDictionary[t.path] = timedMessage.data as Object?;
         debugSb.write('${t.path}:${timedMessage.timestamp};');
       }
     }
@@ -153,7 +213,9 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
   @override
   void close() {
-    _webSocketSub.cancel();
+    _isClosed = true;
+    _webSocketStatesSub.cancel();
+    _webSocketInMsgSub.cancel();
     _webSocketPingSub.cancel();
     _decodedSc.close();
     _finishedRequestSc.close();

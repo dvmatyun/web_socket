@@ -1,3 +1,6 @@
+# 0.3.1
+- added data re-request on reconnection event (only for SocketRequest messages)
+
 # 0.3.0
 
 - changed interfaces

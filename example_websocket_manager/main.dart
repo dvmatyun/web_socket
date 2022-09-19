@@ -106,7 +106,7 @@ void main() async {
   );
   // Running task:
   final compositeTask = dataBridge.compositeRequest(compositeRequest);
-  // Emulating server 2nd response (real server should response with 2
+  // Emulating server 2nd response (real server should respond with 2
   // messages without 2nd request)
   dataBridge.requestData(socketRequestList);
   final compositeResp = await compositeTask;
@@ -119,6 +119,12 @@ void main() async {
   print('Got composite result. Answers = ${compositeResp.dataCached.length}'
       '[$responseOne] and [$responseTwo]');
 
+  // Listening to webSocket status changes
+  socketHandler.socketHandlerStateStream.listen((stateEvent) {
+    // ignore: avoid_print
+    print('> status changed to ${stateEvent.status}');
+  });
+  await Future<void>.delayed(const Duration(seconds: 10));
   // Disconnecting from server:
   await socketHandler.disconnect('manual disconnect');
   // Disposing webSocket:

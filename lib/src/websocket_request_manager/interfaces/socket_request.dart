@@ -8,7 +8,7 @@ abstract class ISocketRequest {
 
   /// Timeout time in milliseconds. If this time has passed and all required
   /// [responseTopics] are not received - request fails.
-  int get timeoutMs;
+  int? get timeoutMs;
 
   /// If [cacheTimeMs] hasn't passed since data was received then get stored
   /// value, otherwise - request and wait for new value. On null data is never

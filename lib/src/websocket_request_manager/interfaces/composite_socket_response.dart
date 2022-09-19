@@ -7,7 +7,7 @@ abstract class ICompositeSocketResponse {
   ISocketRequest get socketRequest;
 
   /// Data received from server
-  Map<String, Object> get dataCached;
+  Map<String, Object?> get dataCached;
 
   /// When request was initiated
   DateTime get timeRequested;

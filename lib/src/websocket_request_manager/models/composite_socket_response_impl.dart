@@ -7,7 +7,7 @@ class CompositeSocketResponse implements ICompositeSocketResponse {
   @override
   final DateTime timeRequested;
   @override
-  final Map<String, Object> dataCached;
+  final Map<String, Object?> dataCached;
   @override
   final int msElapsed;
 
@@ -15,7 +15,7 @@ class CompositeSocketResponse implements ICompositeSocketResponse {
   T getData<T>() {
     for (final d in dataCached.values) {
       if (d is T) {
-        return d as T;
+        return d;
       }
     }
     throw Exception('Data of requested type ${T.toString()} not found!');

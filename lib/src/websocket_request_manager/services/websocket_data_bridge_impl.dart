@@ -31,17 +31,25 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
     const method = 'singleRequestFull';
     final responsePath = request.firstTopicOrMirror.path;
     try {
-      final task = _requestManager.decodedMessagesStream
-          .firstWhere(
-            (e) => e.topic.path == responsePath,
-          )
-          .timeout(Duration(milliseconds: request.timeoutMs));
+      final task = _requestManager.decodedMessagesStream.firstWhere(
+        (e) => e.topic.path == responsePath,
+      );
+
       _requestManager.requestData(request);
-      final result = await task;
+      ITimedSocketResponse<dynamic> result;
+      if (request.timeoutMs != null) {
+        result = await task.timeout(Duration(milliseconds: request.timeoutMs!));
+      } else {
+        result = await task;
+      }
+
       if (result.data is T) {
         return TimedMessage.fromMessage(msg: result);
       }
-      throw Exception('$_stackTrace $method : received data is wrongly typed!');
+      throw Exception(
+        '$_stackTrace $method : received data is wrongly typed! '
+        '(topic path: $responsePath)',
+      );
     } on TimeoutException {
       final errorMessage = '$_stackTrace $method ${request.timeoutMs} ms '
           'timeout passed awaiting for RESPONSE topic path: [$responsePath]';
@@ -63,13 +71,17 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
     }
     final requestPath = request.requestMessage.topic.path;
     try {
-      final task = _requestManager.finishedRequestsStream
-          .firstWhere(
-            (e) => e.socketRequest.requestMessage.topic.path == requestPath,
-          )
-          .timeout(Duration(milliseconds: request.timeoutMs));
+      final task = _requestManager.finishedRequestsStream.firstWhere(
+        (e) => e.socketRequest.requestMessage.topic.path == requestPath,
+      );
       _requestManager.requestData(request);
-      final result = await task;
+
+      ICompositeSocketResponse result;
+      if (request.timeoutMs != null) {
+        result = await task.timeout(Duration(milliseconds: request.timeoutMs!));
+      } else {
+        result = await task;
+      }
       return result;
     } on TimeoutException {
       final errorMessage = '$_stackTrace $method ${request.timeoutMs} ms '
@@ -81,6 +93,29 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
   }
 
   final _storedStreams = <String, Stream>{};
+
+  @override
+  T? getStored<T>(ISocketTopic topic) {
+    final responsePath = topic.path;
+    final msg = _requestManager.getStoredDecodedMessage(responsePath);
+    if (msg == null) {
+      return null;
+    }
+    return msg.data as T;
+  }
+
+  @override
+  Future<T> tryGetStored<T>(ISocketRequest request) async {
+    final response = request.firstTopicOrMirror.path;
+    final msg = _requestManager.getStoredDecodedMessage(response);
+    if (msg != null &&
+        (request.cacheTimeMs == null ||
+            DateTime.now().difference(msg.timestamp).inMilliseconds <
+                (request.cacheTimeMs ?? 0))) {
+      return msg.data as T;
+    }
+    return singleRequest<T>(request);
+  }
 
   @override
   Stream<T> getStream<T>(ISocketTopic topic) {
@@ -99,34 +134,6 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
   }
 
   @override
-  T? getStored<T>(ISocketTopic topic) {
-    final responsePath = topic.path;
-    final msg = _requestManager.getStoredDecodedMessage(responsePath);
-    if (msg == null) {
-      return null;
-    }
-    return msg.data as T;
-  }
-
-  @override
-  Future<T> tryGetStored<T>(ISocketRequest request) async {
-    const method = 'tryGetStored';
-    if (request.responseTopics.isEmpty) {
-      throw ArgumentError('$_stackTrace $method: response '
-          'topics are empty!');
-    }
-    final response = request.responseTopics.first.path;
-    final msg = _requestManager.getStoredDecodedMessage(response);
-    if (msg != null &&
-        (request.cacheTimeMs == null ||
-            DateTime.now().difference(msg.timestamp).inMilliseconds <
-                (request.cacheTimeMs ?? 0))) {
-      return msg.data as T;
-    }
-    return singleRequest<T>(request);
-  }
-
-  @override
   Stream<ITimedSocketResponse<T>> getResponsesStream<T>(ISocketTopic topic) {
     final responsePath = topic.path;
     final streamKey = 't.${topic.path}';
@@ -134,12 +141,14 @@ class WebSocketDataBridge implements IWebSocketDataBridge {
     if (_storedStreams.containsKey(streamKey)) {
       return _storedStreams[streamKey]! as Stream<ITimedSocketResponse<T>>;
     }
-    _storedStreams[streamKey] = _requestManager.decodedMessagesStream
+    final stream = _requestManager.decodedMessagesStream
         .where(
           (e) => e.topic.path == responsePath,
         )
-        .map<T>((event) => event.data as T);
+        .map((event) => TimedMessage<T>.fromMessage(msg: event));
 
-    return _storedStreams[streamKey]! as Stream<ITimedSocketResponse<T>>;
+    _storedStreams[streamKey] = stream;
+
+    return stream;
   }
 }
