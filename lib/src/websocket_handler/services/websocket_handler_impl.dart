@@ -97,6 +97,7 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
         }
         return;
       case SocketStatus.connected:
+        await Future<void>.delayed(const Duration(milliseconds: 200));
         _notifyHandlerState(socketState);
         return _onConnection();
       case SocketStatus.connecting:

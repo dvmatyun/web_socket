@@ -1,3 +1,41 @@
+# 0.3.1
+- added data re-request on reconnection event (only for SocketRequest messages)
+
+# 0.3.0
+
+- changed interfaces
+- fixes
+
+# 0.2.6
+
+- hotfix
+
+# 0.2.5
+
+- hotfix
+# 0.2.4
+
+- data is Nullable now
+
+# 0.2.3
+
+- added `getResponsesStream` method
+
+# 0.2.2
+
+- Hotfix
+
+# 0.2.1
+
+- BaseDecoder added
+
+# 0.2.0
+
+- WebSocketRequestManager added
+- WebSocketDataBridge added
+- timeout for requests
+- composite requests with multiple responses handling
+
 # 0.1.1
 
 - ping calculation changed

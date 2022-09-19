@@ -6,15 +6,14 @@ part of 'message_to_server_impl.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-MessageToServerImpl _$MessageToServerImplFromJson(Map<String, dynamic> json) =>
-    MessageToServerImpl(
+MessageToServer _$MessageToServerFromJson(Map<String, dynamic> json) =>
+    MessageToServer(
       topic: socketTopicFromJson(json['topic'] as String),
       data: json['data'] as String?,
       error: json['error'] as String?,
     );
 
-Map<String, dynamic> _$MessageToServerImplToJson(
-        MessageToServerImpl instance) =>
+Map<String, dynamic> _$MessageToServerToJson(MessageToServer instance) =>
     <String, dynamic>{
       'topic': socketTopicToJson(instance.topic),
       'data': instance.data,

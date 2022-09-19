@@ -9,7 +9,7 @@ part 'message_to_server_impl.g.dart';
 @JsonSerializable(explicitToJson: true)
 
 /// Convenient message model to send message to server
-class MessageToServerImpl implements IMessageToServer {
+class MessageToServer implements IMessageToServer {
   @override
   @JsonKey(fromJson: socketTopicFromJson, toJson: socketTopicToJson)
   final ISocketTopic topic;
@@ -21,17 +21,17 @@ class MessageToServerImpl implements IMessageToServer {
   final String? error;
 
   /// Basic constructor
-  const MessageToServerImpl({required this.topic, this.data, this.error});
+  const MessageToServer({required this.topic, this.data, this.error});
 
   /// Constructor with single path segment - [host]
-  MessageToServerImpl.onlyHost({
+  MessageToServer.onlyHost({
     required String host,
     this.data,
     this.error,
   }) : topic = SocketTopicImpl.onlyHost(host: host);
 
   /// Constructor with 2 topic path segments - [host] and [topic1]
-  MessageToServerImpl.duo({
+  MessageToServer.duo({
     required String host,
     required String topic1,
     this.data,
@@ -39,7 +39,7 @@ class MessageToServerImpl implements IMessageToServer {
   }) : topic = SocketTopicImpl.duo(host: host, topic1: topic1);
 
   /// Constructor with 2 topic path segments - [host], [topic1] and [topic2]
-  MessageToServerImpl.trio({
+  MessageToServer.trio({
     required String host,
     required String topic1,
     required String topic2,
@@ -52,9 +52,9 @@ class MessageToServerImpl implements IMessageToServer {
         );
 
   /// Deserialization from Json to object
-  factory MessageToServerImpl.fromJson(Map<String, dynamic> json) =>
-      _$MessageToServerImplFromJson(json);
+  factory MessageToServer.fromJson(Map<String, dynamic> json) =>
+      _$MessageToServerFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() => _$MessageToServerImplToJson(this);
+  Map<String, dynamic> toJson() => _$MessageToServerToJson(this);
 }
