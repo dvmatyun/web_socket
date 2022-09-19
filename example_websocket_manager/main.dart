@@ -9,8 +9,7 @@ void main() async {
   const connectionOptions = SocketConnectionOptions(
     pingIntervalMs: 3000, // send Ping message every 3000 ms
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    /// see ping/pong messages in logEventStream stream
     skipPingMessages: false,
   );
 

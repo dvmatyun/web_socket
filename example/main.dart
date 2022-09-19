@@ -10,8 +10,7 @@ void main() async {
   const connectionOptions = SocketConnectionOptions(
     pingIntervalMs: 3000, // send Ping message every 3000 ms
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    /// see ping/pong messages in [logEventStream] stream
     skipPingMessages: false,
   );
 
@@ -38,13 +37,6 @@ void main() async {
     // ignore: avoid_print
     print('> webSocket  got text message from server: "$inMsg" '
         '[ping: ${textSocketHandler.pingDelayMs}]');
-  });
-
-  // Listening to debug events inside webSocket
-  textSocketHandler.logEventStream.listen((debugEvent) {
-    // ignore: avoid_print
-    print('> debug event: ${debugEvent.socketLogEventType}'
-        ' [ping=${debugEvent.pingMs} ms]. Debug message=${debugEvent.message}');
   });
 
   // Listening to outgoing messages:

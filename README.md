@@ -22,16 +22,17 @@ using `IMessageProcessor<Tin,Yout>` generic interface or use convinient
 ```dart
 import 'package:websocket_universal/websocket_universal.dart';
 
+/// Example works with Postman Echo server
 void main() async {
   /// Postman echo ws server (you can use your own server URI)
+  /// 'wss://ws.postman-echo.com/raw'
   /// For local server it could look like 'ws://127.0.0.1:42627/websocket'
   const websocketConnectionUri = 'wss://ws.postman-echo.com/raw';
   const textMessageToServer = 'Hello server!';
   const connectionOptions = SocketConnectionOptions(
     pingIntervalMs: 3000, // send Ping message every 3000 ms
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    /// see ping/pong messages in [logEventStream] stream
     skipPingMessages: false,
   );
 
@@ -48,7 +49,7 @@ void main() async {
   );
 
   // Listening to webSocket status changes
-  textSocketHandler.socketStateStream.listen((stateEvent) {
+  textSocketHandler.socketHandlerStateStream.listen((stateEvent) {
     // ignore: avoid_print
     print('> status changed to ${stateEvent.status}');
   });
@@ -56,13 +57,22 @@ void main() async {
   // Listening to server responses:
   textSocketHandler.incomingMessagesStream.listen((inMsg) {
     // ignore: avoid_print
-    print('> webSocket  got text message from server: "$inMsg"');
+    print('> webSocket  got text message from server: "$inMsg" '
+        '[ping: ${textSocketHandler.pingDelayMs}]');
+  });
+
+  // Listening to debug events inside webSocket
+  textSocketHandler.logEventStream.listen((debugEvent) {
+    // ignore: avoid_print
+    print('> debug event: ${debugEvent.socketLogEventType}'
+        ' [ping=${debugEvent.pingMs} ms]. Debug message=${debugEvent.message}');
   });
 
   // Listening to outgoing messages:
   textSocketHandler.outgoingMessagesStream.listen((inMsg) {
     // ignore: avoid_print
-    print('> webSocket sent text message to   server: "$inMsg"');
+    print('> webSocket sent text message to   server: "$inMsg" '
+        '[ping: ${textSocketHandler.pingDelayMs}]');
   });
 
   // Connecting to server:
@@ -75,12 +85,13 @@ void main() async {
 
   textSocketHandler.sendMessage(textMessageToServer);
 
-  await Future<void>.delayed(const Duration(seconds: 5));
+  await Future<void>.delayed(const Duration(seconds: 30));
   // Disconnecting from server:
   await textSocketHandler.disconnect('manual disconnect');
   // Disposing webSocket:
   textSocketHandler.close();
 }
+
 ```
 
 ## #2 Recommended way to exchange messages with server (typed Messages):
@@ -98,8 +109,7 @@ void main() async {
   const connectionOptions = SocketConnectionOptions(
     pingIntervalMs: 3000, // send Ping message every 3000 ms
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    /// see ping/pong messages in [logEventStream] stream
     skipPingMessages: false,
   );
 
@@ -186,8 +196,7 @@ void main() async {
   const connectionOptions = SocketConnectionOptions(
     pingIntervalMs: 3000, // send Ping message every 3000 ms
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    /// see ping/pong messages in [logEventStream] stream
     skipPingMessages: false,
   );
 
@@ -254,8 +263,7 @@ void main() async {
   const connectionOptions = SocketConnectionOptions(
     pingIntervalMs: 3000, // send Ping message every 3000 ms
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
-    /// see ping/pong messages in
-    /// [incomingMessagesStream] and [outgoingMessagesStream] streams
+    /// see ping/pong messages in [logEventStream] stream
     skipPingMessages: false,
   );
 

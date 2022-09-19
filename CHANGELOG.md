@@ -1,3 +1,6 @@
+# 0.3.3
+- readme and example fixes
+
 # 0.3.2
 - removed unused delay after connection
 

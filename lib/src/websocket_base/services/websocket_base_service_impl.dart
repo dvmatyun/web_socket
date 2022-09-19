@@ -231,11 +231,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
       // This controller's stream is listened by [_listenMessagesToServer()]
       _outgoingMessagesController.add(dataToSend);
     } else {
-      if (_skipPingMessages) {
-        _addMessageToSocketOutgoingInternal(dataToSend, false);
-      } else {
-        _addMessageToSocketOutgoingInternal(dataToSend, true);
-      }
+      _addMessageToSocketOutgoingInternal(dataToSend, !_skipPingMessages);
     }
   }
 
