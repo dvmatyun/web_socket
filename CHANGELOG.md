@@ -1,3 +1,6 @@
+# 0.3.2
+- removed unused delay after connection
+
 # 0.3.1
 - added data re-request on reconnection event (only for SocketRequest messages)
 
