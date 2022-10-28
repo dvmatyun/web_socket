@@ -34,6 +34,10 @@ void main() async {
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
     /// see ping/pong messages in [logEventStream] stream
     skipPingMessages: false,
+
+    /// Set this attribute to `true` if do not need any ping/pong
+    /// messages and ping measurement. Default is `false`
+    pingRestrictionForce: false,
   );
 
   /// Example with simple text messages exchanges with server

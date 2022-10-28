@@ -20,6 +20,11 @@ class SocketConnectionOptions {
   /// Inifnite on null.
   final int? maxReconnectionAttemptsPerMinute;
 
+  /// [pingRestrictionForce] If set to `true` then no ping messages will be
+  /// sent to server. Measuring ping feature will not work as intended!!!
+  /// Default is `false`
+  final bool pingRestrictionForce;
+
   /// Constructor
   const SocketConnectionOptions({
     this.timeoutConnectionMs = 5000,
@@ -27,5 +32,6 @@ class SocketConnectionOptions {
     this.skipPingMessages = true,
     this.failedReconnectionAttemptsLimit = 5,
     this.maxReconnectionAttemptsPerMinute = 20,
+    this.pingRestrictionForce = false,
   });
 }

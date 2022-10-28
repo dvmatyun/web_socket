@@ -9,6 +9,7 @@ IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
   int timeoutConnectionMs = 5000,
   int pingIntervalMs = 2000,
   bool skipPingMessages = true,
+  bool pingRestrictionForce = false,
 }) =>
     WebSocketBaseService<T, Y>(
       connectUrlBase: connectUrlBase,
@@ -16,6 +17,7 @@ IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
       timeoutConnectionMs: timeoutConnectionMs,
       pingIntervalMs: pingIntervalMs,
       skipPingMessages: skipPingMessages,
+      pingRestrictionForce: pingRestrictionForce,
     );
 
 /// Base implementation of [IWebSocketBaseService]
@@ -71,12 +73,17 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   /// Internal state parameters:
   bool _disposed = false;
 
+  /// If set to `true` then no ping messages will be sent to server
+  final bool _pingRestrictionForce;
+
   /// Platform specific:
   final IPlatformWebsocket _platformWebSocket;
 
   /// [connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
   /// [messageProcessor] how to process incoming and outgoing messages
   /// [timeoutConnectionMs] connection timeout in ms.
+  /// [pingRestrictionForce] If set to `true` then no ping messages will be
+  /// sent to server. Measuring ping feature will not work as intended!!!
   /// Connection fails if not established during this timeout.
   /// [pingIntervalMs] how often send ping messages to server
   WebSocketBaseService({
@@ -85,11 +92,13 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     int timeoutConnectionMs = 5000,
     int pingIntervalMs = 1000,
     bool skipPingMessages = true,
+    bool pingRestrictionForce = false,
   })  : _connectUrlBase = connectUrlBase,
         _messageProcessor = messageProcessor,
         _timeoutConnectionMs = timeoutConnectionMs,
         _pingIntervalMs = pingIntervalMs,
         _skipPingMessages = skipPingMessages,
+        _pingRestrictionForce = pingRestrictionForce,
         _platformWebSocket = IPlatformWebsocket.createPlatformWsClient();
 
   ///
@@ -264,7 +273,11 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   void _fromServerMessageInternal(dynamic input) {
     try {
       final data = input as Object?;
-      final isPingMessage = _messageProcessor.isPongMessageReceived(data);
+      var isPingMessage = false;
+      if (!_pingRestrictionForce) {
+        isPingMessage = _messageProcessor.isPongMessageReceived(data);
+      }
+
       if (isPingMessage) {
         _pongReceived();
       } else {
@@ -375,6 +388,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }
 
   void _isConnectionAlivePing({String? message}) {
+    if (_pingRestrictionForce) {
+      return;
+    }
+
     if (_checkPlatformIsConnected('Ping socket.')) {
       _sendMessageInternal(_messageProcessor.pingServerMessage, true);
 
@@ -396,6 +413,9 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   ///
   bool _isPongReceived = false;
   void _startPingRequest() {
+    if (_pingRestrictionForce) {
+      return;
+    }
     if (!_isPongReceived) {
       _recalculateCurrentPing(_pingStopwatch.elapsedMilliseconds);
     }
@@ -404,6 +424,9 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }
 
   void _pongReceived() {
+    if (_pingRestrictionForce) {
+      return;
+    }
     if (!_pingStopwatch.isRunning) {
       return;
     }
@@ -428,10 +451,16 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
 
   void _startPingMeasurement() {
     _resetStopwatch();
+    if (_pingRestrictionForce) {
+      return;
+    }
     _pingStopwatch.start();
   }
 
   void _setInitPing() {
+    if (_pingRestrictionForce) {
+      return;
+    }
     if (!_pingStopwatch.isRunning) {
       return;
     }

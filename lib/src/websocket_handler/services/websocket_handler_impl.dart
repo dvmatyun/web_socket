@@ -42,6 +42,7 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
           pingIntervalMs: connectionOptions.pingIntervalMs,
           timeoutConnectionMs: connectionOptions.timeoutConnectionMs,
           skipPingMessages: connectionOptions.skipPingMessages,
+          pingRestrictionForce: connectionOptions.pingRestrictionForce,
         );
 
   /// Short getters:

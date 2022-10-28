@@ -1,3 +1,6 @@
+# 0.3.5
+- added `pingRestrictionForce` attribute to SocketConnectionOptions
+
 # 0.3.4
 - fixed error with re-requesting dart too many times
 # 0.3.3

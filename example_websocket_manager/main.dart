@@ -11,6 +11,10 @@ void main() async {
     timeoutConnectionMs: 4000, // connection fail timeout after 4000 ms
     /// see ping/pong messages in logEventStream stream
     skipPingMessages: false,
+
+    /// Set this attribute to `true` if do not need any ping/pong
+    /// messages and ping measurement. Default is `false`
+    pingRestrictionForce: false,
   );
 
   /// Complex example:
@@ -35,6 +39,11 @@ void main() async {
     webSocketHandler: socketHandler,
   );
   final IWebSocketDataBridge dataBridge = WebSocketDataBridge(requestManager);
+
+  socketHandler.logEventStream.listen((logEvent) {
+    // ignore: avoid_print
+    print('> log ${logEvent.socketLogEventType} ${logEvent.pingMs} ms ping');
+  });
 
   ///
   // Connecting to server:
