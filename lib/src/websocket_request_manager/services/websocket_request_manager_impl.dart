@@ -99,7 +99,7 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   Future<void> _checkNotFinishedRequests() async {
     while (!_isClosed) {
       await Future<void>.delayed(const Duration(milliseconds: 250));
-      await _requestAllNotFinishedRequests();
+      //await _requestAllNotFinishedRequests();
     }
   }
 
@@ -109,26 +109,21 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
     }
   }
 
-  final _requestFailedTimes = <String, int>{};
   Future<void> _requestAllNotFinishedRequests() async {
     if (_webSocketHandler.socketState.status != SocketStatus.connected) {
       return;
     }
     final keys = _notFinishedSocketRequests.keys.toList(growable: false);
     for (final k in keys) {
-      await Future<void>.delayed(const Duration(milliseconds: 5));
+      await Future<void>.delayed(const Duration(milliseconds: 1));
       final value = _notFinishedSocketRequests[k];
-      final timeoutThreshold = (value?.timeoutMs ?? 2000) ~/ 4;
-      if (value != null && value.msElapsed > timeoutThreshold) {
+      if (value == null) {
+        continue;
+      }
+      if (value.timeoutMs != null && value.msElapsed > value.timeoutMs!) {
         _notFinishedSocketRequests.remove(k);
-        if (_requestFailedTimes.containsKey(k)) {
-          _requestFailedTimes[k] = _requestFailedTimes[k]! + 1;
-        } else {
-          _requestFailedTimes[k] = 1;
-        }
-        if (_requestFailedTimes[k]! < 20) {
-          requestData(value);
-        }
+      } else {
+        requestData(value);
       }
     }
   }
@@ -164,7 +159,6 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
           dataCached: dataDictionary,
         );
         _updatePing(finishedRequest.msElapsed);
-        _requestFailedTimes[requestKey] = 0;
         _notFinishedSocketRequests.remove(requestKey);
         _finishedRequestSc.add(finishedRequest);
       }

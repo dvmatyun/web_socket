@@ -1,3 +1,5 @@
+# 0.3.4
+- fixed error with re-requesting dart too many times
 # 0.3.3
 - readme and example fixes
 

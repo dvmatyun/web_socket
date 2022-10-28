@@ -11,6 +11,12 @@
             "program": "example/main.dart",
         },
         {
+            "name": "example_routing",
+            "request": "launch",
+            "type": "dart",
+            "program": "example/routing_example.dart",
+        },
+        {
             "name": "example websocket_manager",
             "request": "launch",
             "type": "dart",
