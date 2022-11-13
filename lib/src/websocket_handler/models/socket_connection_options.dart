@@ -25,6 +25,10 @@ class SocketConnectionOptions {
   /// Default is `false`
   final bool pingRestrictionForce;
 
+  /// Force disconnect if no pong message after [disconnectPingTimeoutMs]
+  /// timeout
+  final int disconnectPingTimeoutMs;
+
   /// Constructor
   const SocketConnectionOptions({
     this.timeoutConnectionMs = 5000,
@@ -33,5 +37,7 @@ class SocketConnectionOptions {
     this.failedReconnectionAttemptsLimit = 5,
     this.maxReconnectionAttemptsPerMinute = 20,
     this.pingRestrictionForce = false,
-  });
+    int? disconnectPingTimeoutMs,
+  }) : disconnectPingTimeoutMs =
+            disconnectPingTimeoutMs ?? (1000 + pingIntervalMs * 2);
 }

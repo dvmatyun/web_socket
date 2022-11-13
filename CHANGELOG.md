@@ -1,3 +1,6 @@
+# 0.3.6
+- ping algorithm improves
+
 # 0.3.5
 - added `pingRestrictionForce` attribute to SocketConnectionOptions
 

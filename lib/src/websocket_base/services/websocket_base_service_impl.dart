@@ -79,6 +79,8 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   /// Platform specific:
   final IPlatformWebsocket _platformWebSocket;
 
+  final int _disconnectPingTimeoutMs;
+
   /// [connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
   /// [messageProcessor] how to process incoming and outgoing messages
   /// [timeoutConnectionMs] connection timeout in ms.
@@ -91,6 +93,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     required IMessageProcessor<T, Y> messageProcessor,
     int timeoutConnectionMs = 5000,
     int pingIntervalMs = 1000,
+    int disconnectPingTimeoutMs = 4000,
     bool skipPingMessages = true,
     bool pingRestrictionForce = false,
   })  : _connectUrlBase = connectUrlBase,
@@ -99,6 +102,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
         _pingIntervalMs = pingIntervalMs,
         _skipPingMessages = skipPingMessages,
         _pingRestrictionForce = pingRestrictionForce,
+        _disconnectPingTimeoutMs = disconnectPingTimeoutMs,
         _platformWebSocket = IPlatformWebsocket.createPlatformWsClient();
 
   ///
@@ -370,7 +374,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }
 
   bool _checkPlatformIsConnected(String whoChecks) {
-    if (_pingStopwatch.elapsedMilliseconds > 2000) {
+    if (_pingStopwatch.elapsedMilliseconds > _disconnectPingTimeoutMs) {
       _debugEventNotificationInternal(
         SocketLogEventType.ping,
         '$whoChecks : disconnected due to high ping',
