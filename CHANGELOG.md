@@ -1,3 +1,9 @@
+# 0.4.0
+- technical fixes and additional log message type added
+
+# 0.3.7
+- added reconnection timeout
+
 # 0.3.6
 - ping algorithm improves
 

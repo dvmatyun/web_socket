@@ -56,7 +56,7 @@ void main() async {
 
   textSocketHandler.sendMessage(textMessageToServer);
 
-  await Future<void>.delayed(const Duration(seconds: 30));
+  await Future<void>.delayed(const Duration(seconds: 5));
   // Disconnecting from server:
   await textSocketHandler.disconnect('manual disconnect');
   // Disposing webSocket:

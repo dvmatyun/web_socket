@@ -129,6 +129,7 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
     if (_failsPerMin != null && _lastMinuteAttempts > _failsPerMin!) {
       return false;
     }
+    await Future<void>.delayed(_connectionOptions.reconnectionDelay);
     final isConnected = await super.connect();
     if (isConnected) {
       return true;

@@ -29,6 +29,9 @@ class SocketConnectionOptions {
   /// timeout
   final int disconnectPingTimeoutMs;
 
+  /// Delay between reconnection attempts in order to not spam server.
+  final Duration reconnectionDelay;
+
   /// Constructor
   const SocketConnectionOptions({
     this.timeoutConnectionMs = 5000,
@@ -38,6 +41,7 @@ class SocketConnectionOptions {
     this.maxReconnectionAttemptsPerMinute = 20,
     this.pingRestrictionForce = false,
     int? disconnectPingTimeoutMs,
+    this.reconnectionDelay = const Duration(seconds: 1),
   }) : disconnectPingTimeoutMs =
             disconnectPingTimeoutMs ?? (1000 + pingIntervalMs * 2);
 }

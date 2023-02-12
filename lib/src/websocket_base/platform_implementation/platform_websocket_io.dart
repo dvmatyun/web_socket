@@ -16,12 +16,12 @@ class PlatformWebsocketIo implements IPlatformWebsocket {
   String? get closeReason => _webSocket?.closeReason;
 
   @override
-  Future<bool> connect(String url) async {
+  Future<bool> connect(String url, Duration timeout) async {
     var connectUrl = url;
     if (io.Platform.isAndroid) {
       connectUrl = connectUrl.replaceAll('127.0.0.1', '10.0.2.2');
     }
-    _webSocket = await io.WebSocket.connect(connectUrl);
+    _webSocket = await io.WebSocket.connect(connectUrl).timeout(timeout);
     if (_webSocket?.readyState == 1) {
       return true;
     }

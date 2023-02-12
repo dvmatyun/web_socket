@@ -19,7 +19,10 @@ enum SocketLogEventType {
   toServerMessage('toServerMessage'),
 
   /// Getting message from server
-  fromServerMessage('fromServerMessage');
+  fromServerMessage('fromServerMessage'),
+
+  /// Internal log message
+  log('log');
 
   /// {@nodoc}
   final String value;

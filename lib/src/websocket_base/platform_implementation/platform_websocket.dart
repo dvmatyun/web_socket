@@ -17,7 +17,7 @@ abstract class IPlatformWebsocket {
   String? get closeReason;
 
   /// Connect to server (websocket)
-  Future<bool> connect(String url);
+  Future<bool> connect(String url, Duration timeout);
 
   /// Send message to server
   void sendMessage(Object data);

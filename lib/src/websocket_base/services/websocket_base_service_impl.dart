@@ -64,7 +64,16 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   ISocketState _socketState =
       SocketStateImpl(status: SocketStatus.disconnected, message: 'Created');
   @override
-  ISocketState get socketState => _socketState;
+  ISocketState get socketState {
+    if (_disposed && _socketState.status != SocketStatus.disconnected) {
+      close();
+      return SocketStateImpl(
+        status: SocketStatus.disconnected,
+        message: 'Already disposed!',
+      );
+    }
+    return _socketState;
+  }
 
   final _debugEventController = StreamController<ISocketLogEvent>.broadcast();
   @override
@@ -113,11 +122,20 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   @override
   Future<bool> connect() async {
     if (_disposed) {
-      throw Exception('Socket is already disposed!');
+      const errMsg = 'Socket is already disposed!';
+      _debugEventNotificationInternal(
+        SocketLogEventType.error,
+        errMsg,
+      );
+      throw Exception(errMsg);
     }
     try {
       if (socketState.status == SocketStatus.connected) {
         if (_checkPlatformIsConnected('connect method')) {
+          _debugEventNotificationInternal(
+            SocketLogEventType.warning,
+            'Tried to connect with already connected socket!',
+          );
           return true;
         } else {
           await _internalDisconnect(
@@ -157,9 +175,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
       SocketStatus.connecting,
       _connectingPhrase(baseUrl),
     );
+    final timeout = Duration(milliseconds: _timeoutConnectionMs);
     final isConnected = await _platformWebSocket
-        .connect(_connectUrlBase)
-        .timeout(Duration(milliseconds: _timeoutConnectionMs));
+        .connect(_connectUrlBase, timeout)
+        .timeout(timeout);
     return isConnected;
   }
 
@@ -363,6 +382,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
         if (socketState.status != SocketStatus.connected) {
           return;
         }
+
         _isConnectionAlivePing();
       } on Object catch (e) {
         _debugEventNotificationInternal(
@@ -395,7 +415,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     if (_pingRestrictionForce) {
       return;
     }
-
+    _debugEventNotificationInternal(
+      SocketLogEventType.log,
+      '[_isConnectionAlivePing]: checking platform status!',
+    );
     if (_checkPlatformIsConnected('Ping socket.')) {
       _sendMessageInternal(_messageProcessor.pingServerMessage, true);
 
@@ -488,6 +511,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     if (socketState.status == SocketStatus.disconnected) {
       return;
     }
+    _debugEventNotificationInternal(
+      SocketLogEventType.log,
+      '[_internalDisconnect]: disconnect was called with reason=<$reason>!',
+    );
     await _fromServerMessagesSub?.cancel();
     await _platformWebSocket.close(3001, reason);
     _recalculateCurrentPing(9999);

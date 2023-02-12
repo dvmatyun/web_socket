@@ -18,9 +18,9 @@ class PlatformWebsocketHtml implements IPlatformWebsocket {
   String? closeReason;
 
   @override
-  Future<bool> connect(String url) async {
+  Future<bool> connect(String url, Duration timeout) async {
     _webSocket = html.WebSocket(url);
-    await _webSocket?.onOpen.first;
+    await _webSocket?.onOpen.first.timeout(timeout);
     if (_webSocket?.readyState == html.WebSocket.OPEN) {
       return true;
     }
