@@ -66,11 +66,11 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   @override
   ISocketState get socketState {
     if (_disposed && _socketState.status != SocketStatus.disconnected) {
-      close();
-      return SocketStateImpl(
-        status: SocketStatus.disconnected,
-        message: 'Already disposed!',
+      _notifySocketStatusInternal(
+        SocketStatus.disconnected,
+        'Tried to get socketState of already disposed socket!',
       );
+      return _socketState;
     }
     return _socketState;
   }
@@ -338,10 +338,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   ///
 
   void _notifySocketStatusInternal(SocketStatus status, String message) {
+    _socketState = SocketStateImpl(status: status, message: message);
     if (_socketStateController.isClosed) {
       return;
     }
-    _socketState = SocketStateImpl(status: status, message: message);
     _socketStateController.add(_socketState);
     _debugEventNotificationInternal(
       SocketLogEventType.socketStateChanged,

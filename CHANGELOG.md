@@ -1,3 +1,6 @@
+# 0.4.1
+- fix stackoverflow problem
+
 # 0.4.0
 - technical fixes and additional log message type added
 
