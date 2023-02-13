@@ -41,7 +41,6 @@ export 'src/websocket_request_manager/interfaces/socket_manager_middleware.dart'
 export 'src/websocket_request_manager/interfaces/socket_request.dart';
 export 'src/websocket_request_manager/interfaces/socket_response.dart';
 export 'src/websocket_request_manager/interfaces/timed_socket_response.dart';
-export 'src/websocket_request_manager/interfaces/timed_socket_response.dart';
 export 'src/websocket_request_manager/interfaces/websocket_data_bridge.dart';
 export 'src/websocket_request_manager/interfaces/websocket_request_manager.dart';
 export 'src/websocket_request_manager/models/composite_socket_response_impl.dart';

@@ -18,7 +18,7 @@ class CompositeSocketResponse implements ICompositeSocketResponse {
         return d;
       }
     }
-    throw Exception('Data of requested type ${T.toString()} not found!');
+    throw Exception('Data of requested type $T not found!');
   }
 
   /// Constructor
