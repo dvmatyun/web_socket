@@ -1,3 +1,6 @@
+# 0.4.2
+- fix analyzer problems
+
 # 0.4.1
 - fix stackoverflow problem
 
