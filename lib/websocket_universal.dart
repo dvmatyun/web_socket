@@ -55,5 +55,4 @@ export 'src/websocket_request_manager/services/base_socket_decoder.dart';
 /// Websocket Request manager Services:
 export 'src/websocket_request_manager/services/socket_manager_middleware_impl.dart';
 export 'src/websocket_request_manager/services/websocket_data_bridge_impl.dart';
-export 'src/websocket_request_manager/services/websocket_data_bridge_impl.dart';
 export 'src/websocket_request_manager/services/websocket_request_manager_impl.dart';
