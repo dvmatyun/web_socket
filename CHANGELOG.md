@@ -1,3 +1,6 @@
+# 0.5.0
+- updated dependencies (to json_annotation: ^4.8.0 / meta: ^1.9.0)
+
 # 0.4.2
 - fix analyzer problems
 
