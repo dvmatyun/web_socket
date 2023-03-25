@@ -1,3 +1,6 @@
+# 0.5.1
+- updated dependencies (downgraded to meta: ^1.8.0)
+
 # 0.5.0
 - updated dependencies (to json_annotation: ^4.8.0 / meta: ^1.9.0)
 
