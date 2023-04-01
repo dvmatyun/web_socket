@@ -15,13 +15,19 @@ class PlatformWebsocketIo implements IPlatformWebsocket {
   @override
   String? get closeReason => _webSocket?.closeReason;
 
+  bool _isConnecting = false;
+
   @override
   Future<bool> connect(String url, Duration timeout) async {
+    _isConnecting = true;
+    _webSocket = null;
+    await Future<void>.delayed(Duration.zero);
     var connectUrl = url;
     if (io.Platform.isAndroid) {
       connectUrl = connectUrl.replaceAll('127.0.0.1', '10.0.2.2');
     }
     _webSocket = await io.WebSocket.connect(connectUrl).timeout(timeout);
+    _isConnecting = false;
     if (_webSocket?.readyState == 1) {
       return true;
     }
@@ -61,6 +67,9 @@ class PlatformWebsocketIo implements IPlatformWebsocket {
 
   @override
   SocketStatus get socketStatus {
+    if (_isConnecting) {
+      return SocketStatus.connecting;
+    }
     if (_webSocket?.readyState == 1) {
       return SocketStatus.connected;
     }

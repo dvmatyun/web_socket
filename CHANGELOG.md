@@ -1,3 +1,6 @@
+# 0.5.2
+- socketStatus implementation for IO web socket improved
+
 # 0.5.1
 - updated dependencies (downgraded to meta: ^1.8.0)
 
