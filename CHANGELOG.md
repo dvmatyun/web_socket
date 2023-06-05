@@ -1,3 +1,7 @@
+# 1.0.0
+- Require dart 3.0
+- updated dependencies
+
 # 0.5.2
 - socketStatus implementation for IO web socket improved
 

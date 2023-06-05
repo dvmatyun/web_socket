@@ -12,10 +12,6 @@ analyzer:
     # Assets
     - "assets/**"
 
-  strong-mode:
-    implicit-casts: false
-    implicit-dynamic: false
-
   errors:
     # Info
     todo: info
@@ -166,7 +162,6 @@ linter:
     prefer_collection_literals: true
     prefer_conditional_assignment: true
     prefer_contains: true
-    prefer_equal_for_default_values: true
     prefer_final_fields: true
     prefer_for_elements_to_map_fromIterable: true
     prefer_generic_function_type_aliases: true
