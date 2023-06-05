@@ -7,6 +7,41 @@
 3. Ping delay measurement and easy setup for ping/pong interaction with server!
 4. Auto-reconnection feature for `IWebSocketHandler` ws handler.
 
+
+## Fast start:
+```dart
+// ignore_for_file: avoid_print
+import 'package:websocket_universal/websocket_universal.dart';
+
+/// Example works with Postman Echo server
+void main() async {
+  /// 1. Create webSocket handler:
+  final textSocketHandler = IWebSocketHandler<String, String>.createClient(
+    'wss://ws.postman-echo.com/raw', // Postman echo ws server
+    SocketSimpleTextProcessor(),
+  );
+
+  /// 2. Listen to webSocket messages:
+  textSocketHandler.incomingMessagesStream.listen((inMsg) {
+    print('> webSocket  got text message from server: "$inMsg" '
+        '[ping: ${textSocketHandler.pingDelayMs}]');
+  });
+  textSocketHandler.outgoingMessagesStream.listen((inMsg) {
+    print('> webSocket sent text message to   server: "$inMsg" '
+        '[ping: ${textSocketHandler.pingDelayMs}]');
+  });
+
+  /// 3. Connect & send message:
+  await textSocketHandler.connect();
+  textSocketHandler.sendMessage('Hello server!');
+  await Future<void>.delayed(const Duration(seconds: 4));
+
+  // 4. Disconnect & close connection:
+  await textSocketHandler.disconnect('manual disconnect');
+  textSocketHandler.close();
+}
+```
+
 ## #1 Simple example with String messages (from and to server):
 You don't need your own ws server to run this code.  
 [Example postman echo server](https://blog.postman.com/introducing-postman-websocket-echo-service/) is used in this example.
