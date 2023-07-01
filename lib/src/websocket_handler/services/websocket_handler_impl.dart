@@ -11,8 +11,8 @@ import '../../../websocket_universal.dart';
 /// you can pass your own implementation for [platformWebsocket] (optional)
 IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
   String socketUrl,
-  IMessageProcessor<T, Y> messageProcessor,
-  SocketConnectionOptions connectionOptions, {
+  IMessageProcessor<T, Y> messageProcessor, {
+  SocketConnectionOptions connectionOptions = const SocketConnectionOptions(),
   IPlatformWebsocket? platformWebsocket,
 }) =>
     WebSocketHandler<T, Y>(

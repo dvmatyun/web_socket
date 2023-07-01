@@ -24,10 +24,12 @@ abstract class IWebSocketHandler<Tin, Yout>
     String socketUrl,
     IMessageProcessor<Tin, Yout> messageProcessor, {
     SocketConnectionOptions connectionOptions = const SocketConnectionOptions(),
+    IPlatformWebsocket? platformWebsocket,
   }) =>
       createWebsocketClient(
         socketUrl,
         messageProcessor,
-        connectionOptions,
+        connectionOptions: connectionOptions,
+        platformWebsocket: platformWebsocket,
       );
 }

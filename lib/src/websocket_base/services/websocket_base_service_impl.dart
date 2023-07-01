@@ -10,6 +10,7 @@ IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
   int pingIntervalMs = 2000,
   bool skipPingMessages = true,
   bool pingRestrictionForce = false,
+  IPlatformWebsocket? platformWebsocket,
 }) =>
     WebSocketBaseService<T, Y>(
       connectUrlBase: connectUrlBase,
@@ -18,6 +19,7 @@ IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
       pingIntervalMs: pingIntervalMs,
       skipPingMessages: skipPingMessages,
       pingRestrictionForce: pingRestrictionForce,
+      platformWebsocket: platformWebsocket,
     );
 
 /// Base implementation of [IWebSocketBaseService]
