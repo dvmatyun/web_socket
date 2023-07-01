@@ -1,3 +1,9 @@
+# 1.1.0
+- Changed some constructors to allow more customization
+
+# 1.0.1
+- Restricted close message length for HTML webSocket
+
 # 1.0.0
 - Require dart 3.0
 - updated dependencies

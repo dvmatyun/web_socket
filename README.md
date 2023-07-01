@@ -1,6 +1,8 @@
 # websocket_universal
 [![CHECKOUT](https://github.com/dvmatyun/web_socket/actions/workflows/checkout.yml/badge.svg)](https://github.com/dvmatyun/web_socket/actions/workflows/checkout.yml)
 
+# Dart and Flutter webSocket client package for all the platforms (web, mobile, desktop)
+
 ## Easy-to-use interface:
 1. Easy-to-use websocket methods and usage examples included!
 2. Universal socket status changes stream.
