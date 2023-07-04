@@ -8,15 +8,18 @@ import '../../../websocket_universal.dart';
 /// [socketUrl] Postman echo service [wss://ws.postman-echo.com/raw]
 /// [messageProcessor] handles in and out messages processing
 /// [connectionOptions] socket handler connection options
+/// you can pass your own implementation for [platformWebsocket] (optional)
 IWebSocketHandler<T, Y> createWebsocketClient<T, Y>(
   String socketUrl,
-  IMessageProcessor<T, Y> messageProcessor,
-  SocketConnectionOptions connectionOptions,
-) =>
+  IMessageProcessor<T, Y> messageProcessor, {
+  SocketConnectionOptions connectionOptions = const SocketConnectionOptions(),
+  IPlatformWebsocket? platformWebsocket,
+}) =>
     WebSocketHandler<T, Y>(
       socketUrl: socketUrl,
       messageProcessor: messageProcessor,
       connectionOptions: connectionOptions,
+      platformWebsocket: platformWebsocket,
     );
 
 /// Base implementation of [IWebSocketHandler]
@@ -35,6 +38,7 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
     required String socketUrl,
     required IMessageProcessor<Tin, Yout> messageProcessor,
     required SocketConnectionOptions connectionOptions,
+    IPlatformWebsocket? platformWebsocket,
   })  : _connectionOptions = connectionOptions,
         super(
           connectUrlBase: socketUrl,
@@ -43,6 +47,7 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
           timeoutConnectionMs: connectionOptions.timeoutConnectionMs,
           skipPingMessages: connectionOptions.skipPingMessages,
           pingRestrictionForce: connectionOptions.pingRestrictionForce,
+          platformWebsocket: platformWebsocket,
         );
 
   /// Short getters:

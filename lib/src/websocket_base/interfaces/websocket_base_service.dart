@@ -55,6 +55,7 @@ abstract class IWebSocketBaseService<Tin, Yout> {
     int timeoutConnectionMs = 5000,
     int pingIntervalMs = 2000,
     bool skipPingMessages = true,
+    IPlatformWebsocket? platformWebsocket,
   }) =>
       createWebsocketBaseService(
         connectUrlBase,
@@ -62,5 +63,6 @@ abstract class IWebSocketBaseService<Tin, Yout> {
         timeoutConnectionMs: timeoutConnectionMs,
         pingIntervalMs: pingIntervalMs,
         skipPingMessages: skipPingMessages,
+        platformWebsocket: platformWebsocket,
       );
 }

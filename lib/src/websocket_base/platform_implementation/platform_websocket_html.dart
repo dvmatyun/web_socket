@@ -52,7 +52,12 @@ class PlatformWebsocketHtml implements IPlatformWebsocket {
 
   @override
   Future<void> close(int? code, String? reason) async {
-    _webSocket?.close(code, reason);
+    final reasonNotNull = reason ?? '?';
+    _webSocket?.close(
+      code,
+      // HTML socket has restriction on message length in bytes (123 byte?)
+      reasonNotNull.length > 5 ? reasonNotNull.substring(0, 5) : reasonNotNull,
+    );
   }
 
   @override

@@ -10,6 +10,7 @@ IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
   int pingIntervalMs = 2000,
   bool skipPingMessages = true,
   bool pingRestrictionForce = false,
+  IPlatformWebsocket? platformWebsocket,
 }) =>
     WebSocketBaseService<T, Y>(
       connectUrlBase: connectUrlBase,
@@ -18,6 +19,7 @@ IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
       pingIntervalMs: pingIntervalMs,
       skipPingMessages: skipPingMessages,
       pingRestrictionForce: pingRestrictionForce,
+      platformWebsocket: platformWebsocket,
     );
 
 /// Base implementation of [IWebSocketBaseService]
@@ -97,6 +99,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   /// sent to server. Measuring ping feature will not work as intended!!!
   /// Connection fails if not established during this timeout.
   /// [pingIntervalMs] how often send ping messages to server
+  /// you can pass your own implementation for [platformWebsocket]
   WebSocketBaseService({
     required String connectUrlBase,
     required IMessageProcessor<T, Y> messageProcessor,
@@ -105,6 +108,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     int disconnectPingTimeoutMs = 4000,
     bool skipPingMessages = true,
     bool pingRestrictionForce = false,
+    IPlatformWebsocket? platformWebsocket,
   })  : _connectUrlBase = connectUrlBase,
         _messageProcessor = messageProcessor,
         _timeoutConnectionMs = timeoutConnectionMs,
@@ -112,7 +116,8 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
         _skipPingMessages = skipPingMessages,
         _pingRestrictionForce = pingRestrictionForce,
         _disconnectPingTimeoutMs = disconnectPingTimeoutMs,
-        _platformWebSocket = IPlatformWebsocket.createPlatformWsClient();
+        _platformWebSocket =
+            platformWebsocket ?? IPlatformWebsocket.createPlatformWsClient();
 
   ///
   /// NOT CONNECTED
