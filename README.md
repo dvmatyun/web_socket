@@ -9,6 +9,10 @@
 3. Ping delay measurement and easy setup for ping/pong interaction with server!
 4. Auto-reconnection feature for `IWebSocketHandler` ws handler.
 
+## Contact & support me:
+1. [Telegram](https://t.me/DmitriiOk)
+2. [LinkedIn](https://www.linkedin.com/in/dvmatyun/)
+3. [Support me on patreon](https://www.patreon.com/KonungzRage)
 
 ## Fast start:
 ```dart
