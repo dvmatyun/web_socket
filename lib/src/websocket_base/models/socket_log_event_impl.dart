@@ -1,5 +1,4 @@
 import '../enums/socket_log_event_type.dart';
-import '../enums/socket_status_type.dart';
 import '../interfaces/socket_log_event.dart';
 import 'socket_state_impl.dart';
 
@@ -17,12 +16,9 @@ class SocketLogEventImpl extends SocketStateImpl implements ISocketLogEvent {
   /// Constructor
   SocketLogEventImpl({
     required this.socketLogEventType,
-    required SocketStatus status,
+    required super.status,
     required this.pingMs,
-    String message = '',
+    super.message,
     this.data,
-  }) : super(
-          status: status,
-          message: message,
-        );
+  });
 }

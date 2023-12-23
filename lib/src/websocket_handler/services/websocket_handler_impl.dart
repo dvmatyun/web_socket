@@ -36,18 +36,16 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
   /// [socketUrl] should look like [ws://127.0.0.1:42627/websocket]
   WebSocketHandler({
     required String socketUrl,
-    required IMessageProcessor<Tin, Yout> messageProcessor,
+    required super.messageProcessor,
     required SocketConnectionOptions connectionOptions,
-    IPlatformWebsocket? platformWebsocket,
+    super.platformWebsocket,
   })  : _connectionOptions = connectionOptions,
         super(
           connectUrlBase: socketUrl,
-          messageProcessor: messageProcessor,
           pingIntervalMs: connectionOptions.pingIntervalMs,
           timeoutConnectionMs: connectionOptions.timeoutConnectionMs,
           skipPingMessages: connectionOptions.skipPingMessages,
           pingRestrictionForce: connectionOptions.pingRestrictionForce,
-          platformWebsocket: platformWebsocket,
         );
 
   /// Short getters:

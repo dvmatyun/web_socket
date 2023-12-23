@@ -1,3 +1,6 @@
+# 1.2.0
+- Upgraded dependencies, minimum dart sdk version is 3.2.3 now
+
 # 1.1.1
 - IPlatformWebsocket is added as an optional parameter to interfaces
 

@@ -46,7 +46,7 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
           (e) => [
             SocketLogEventType.pong,
             SocketLogEventType.ping,
-            SocketLogEventType.socketStateChanged
+            SocketLogEventType.socketStateChanged,
           ].contains(e.socketLogEventType),
         )
         .listen((p) => _updatePing(p.pingMs));
