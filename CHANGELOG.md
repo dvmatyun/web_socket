@@ -1,3 +1,9 @@
+# 1.2.2
+- Meta constraint downgraded
+
+# 1.2.1
+- Upgraded dependencies
+
 # 1.2.0
 - Upgraded dependencies, minimum dart sdk version is 3.2.3 now
 
