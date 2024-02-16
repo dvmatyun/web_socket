@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import '../../../websocket_universal.dart';
-import '../models/socket_optional_params.dart';
 
 /// Basic universal (multiplatform) websocket service.
 /// [Tin] is type of incoming deserialized messages

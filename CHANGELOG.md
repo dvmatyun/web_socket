@@ -1,3 +1,6 @@
+# 1.2.4
+- Fixed SocketOptionalParams export
+
 # 1.2.3
 - Added SocketOptionalParams to connect methods. (Only for IO platforms!)
 

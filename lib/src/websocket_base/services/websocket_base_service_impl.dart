@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import '../../../websocket_universal.dart';
-import '../models/socket_optional_params.dart';
 
 /// Websocket base service factory
 IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(

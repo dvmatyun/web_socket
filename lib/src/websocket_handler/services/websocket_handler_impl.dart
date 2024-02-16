@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import '../../../websocket_universal.dart';
-import '../../websocket_base/models/socket_optional_params.dart';
 
 /// Creates real websocket client depending on running platform (io / html).
 /// Requires server.
