@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../websocket_universal.dart';
+import '../models/socket_optional_params.dart';
 
 /// Basic universal (multiplatform) websocket service.
 /// [Tin] is type of incoming deserialized messages
@@ -30,7 +31,9 @@ abstract class IWebSocketBaseService<Tin, Yout> {
   Stream<ISocketLogEvent> get logEventStream;
 
   /// Connect to server
-  Future<bool> connect();
+  Future<bool> connect({
+    SocketOptionalParams params = const SocketOptionalParams(),
+  });
 
   /// Disconnect from server. [reason] may be any string
   Future<void> disconnect(String reason);

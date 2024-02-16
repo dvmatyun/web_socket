@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../websocket_universal.dart';
+import '../models/socket_optional_params.dart';
 
 /// Websocket base service factory
 IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
@@ -119,13 +120,17 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
         _platformWebSocket =
             platformWebsocket ?? IPlatformWebsocket.createPlatformWsClient();
 
+  SocketOptionalParams _latestParams = const SocketOptionalParams();
+
   ///
   /// NOT CONNECTED
   /// Connecting:
   /// NOT CONNECTED
   ///
   @override
-  Future<bool> connect() async {
+  Future<bool> connect({
+    SocketOptionalParams params = const SocketOptionalParams(),
+  }) async {
     if (_disposed) {
       const errMsg = 'Socket is already disposed!';
       _debugEventNotificationInternal(
@@ -134,6 +139,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
       );
       throw Exception(errMsg);
     }
+    _latestParams = params;
     try {
       if (socketState.status == SocketStatus.connected) {
         if (_checkPlatformIsConnected('connect method')) {
@@ -182,7 +188,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
     );
     final timeout = Duration(milliseconds: _timeoutConnectionMs);
     final isConnected = await _platformWebSocket
-        .connect(_connectUrlBase, timeout)
+        .connect(_connectUrlBase, timeout, params: _latestParams)
         .timeout(timeout);
     return isConnected;
   }

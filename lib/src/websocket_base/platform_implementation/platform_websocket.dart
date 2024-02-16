@@ -1,4 +1,5 @@
 import '../../../websocket_universal.dart';
+import '../models/socket_optional_params.dart';
 import 'platform_websocket_io.dart'
     if (dart.library.html) 'platform_websocket_html.dart';
 
@@ -17,7 +18,11 @@ abstract class IPlatformWebsocket {
   String? get closeReason;
 
   /// Connect to server (websocket)
-  Future<bool> connect(String url, Duration timeout);
+  Future<bool> connect(
+    String url,
+    Duration timeout, {
+    SocketOptionalParams params = const SocketOptionalParams(),
+  });
 
   /// Send message to server
   void sendMessage(Object data);

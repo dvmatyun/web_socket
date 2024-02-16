@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:html' as html;
 
 import '../enums/socket_status_type.dart';
+import '../models/socket_optional_params.dart';
 import 'platform_websocket.dart';
 
 /// Factory for platform HTML ws client
@@ -18,7 +19,11 @@ class PlatformWebsocketHtml implements IPlatformWebsocket {
   String? closeReason;
 
   @override
-  Future<bool> connect(String url, Duration timeout) async {
+  Future<bool> connect(
+    String url,
+    Duration timeout, {
+    SocketOptionalParams params = const SocketOptionalParams(),
+  }) async {
     _webSocket = html.WebSocket(url);
     await _webSocket?.onOpen.first.timeout(timeout);
     if (_webSocket?.readyState == html.WebSocket.OPEN) {

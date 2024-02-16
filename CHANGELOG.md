@@ -1,3 +1,6 @@
+# 1.2.3
+- Added SocketOptionalParams to connect methods. (Only for IO platforms!)
+
 # 1.2.2
 - Meta constraint downgraded
 

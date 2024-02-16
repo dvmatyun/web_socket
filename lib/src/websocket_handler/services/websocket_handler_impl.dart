@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../websocket_universal.dart';
+import '../../websocket_base/models/socket_optional_params.dart';
 
 /// Creates real websocket client depending on running platform (io / html).
 /// Requires server.
@@ -75,14 +76,19 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
   @override
   ISocketState get socketHandlerState => _socketReconnectingState;
 
+  SocketOptionalParams _latestParams = const SocketOptionalParams();
+
   /// Connect to server
   @override
-  Future<bool> connect() async {
+  Future<bool> connect({
+    SocketOptionalParams params = const SocketOptionalParams(),
+  }) async {
     if (_disposed) {
       return false;
     }
+    _latestParams = params;
     await _initReconnectionCycle();
-    final isConnected = await super.connect();
+    final isConnected = await super.connect(params: params);
     return isConnected;
   }
 
@@ -133,7 +139,7 @@ class WebSocketHandler<Tin, Yout> extends WebSocketBaseService<Tin, Yout>
       return false;
     }
     await Future<void>.delayed(_connectionOptions.reconnectionDelay);
-    final isConnected = await super.connect();
+    final isConnected = await super.connect(params: _latestParams);
     if (isConnected) {
       return true;
     }

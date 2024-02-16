@@ -1,6 +1,7 @@
 import 'dart:io' as io;
 
 import '../enums/socket_status_type.dart';
+import '../models/socket_optional_params.dart';
 import 'platform_websocket.dart';
 
 /// Factory for platform IO ws client
@@ -18,7 +19,11 @@ class PlatformWebsocketIo implements IPlatformWebsocket {
   bool _isConnecting = false;
 
   @override
-  Future<bool> connect(String url, Duration timeout) async {
+  Future<bool> connect(
+    String url,
+    Duration timeout, {
+    SocketOptionalParams params = const SocketOptionalParams(),
+  }) async {
     _isConnecting = true;
     _webSocket = null;
     await Future<void>.delayed(Duration.zero);
@@ -26,7 +31,11 @@ class PlatformWebsocketIo implements IPlatformWebsocket {
     if (io.Platform.isAndroid) {
       connectUrl = connectUrl.replaceAll('127.0.0.1', '10.0.2.2');
     }
-    _webSocket = await io.WebSocket.connect(connectUrl).timeout(timeout);
+    _webSocket = await io.WebSocket.connect(
+      connectUrl,
+      headers: params.headers,
+      protocols: params.protocols,
+    ).timeout(timeout);
     _isConnecting = false;
     if (_webSocket?.readyState == 1) {
       return true;
