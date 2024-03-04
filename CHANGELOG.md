@@ -1,3 +1,6 @@
+# 1.2.5
+- Fixed checkout
+
 # 1.2.4
 - Fixed SocketOptionalParams export
 

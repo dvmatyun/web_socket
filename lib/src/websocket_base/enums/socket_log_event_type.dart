@@ -24,9 +24,9 @@ enum SocketLogEventType {
   /// Internal log message
   log('log');
 
-  /// {@nodoc}
+  /// String value
   final String value;
 
-  /// {@nodoc}
+  /// Constructor
   const SocketLogEventType(this.value);
 }

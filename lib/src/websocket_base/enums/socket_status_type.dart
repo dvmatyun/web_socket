@@ -9,9 +9,9 @@ enum SocketStatus {
   /// Connected
   connected('connected');
 
-  /// {@nodoc}
+  /// String value
   final String value;
 
-  /// {@nodoc}
+  /// Default constructor
   const SocketStatus(this.value);
 }
