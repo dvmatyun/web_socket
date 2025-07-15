@@ -3,6 +3,7 @@ import 'dart:io' as io;
 import '../enums/socket_status_type.dart';
 import '../models/socket_optional_params.dart';
 import 'platform_websocket.dart';
+import 'utils.dart';
 
 /// Factory for platform IO ws client
 IPlatformWebsocket createPlatformWsClient() => PlatformWebsocketIo();
@@ -56,6 +57,7 @@ class PlatformWebsocketIo implements IPlatformWebsocket {
 
   @override
   Future<void> close(int? code, String? reason) async {
+    checkCloseCode(code);
     await _webSocket?.close(code, reason);
   }
 

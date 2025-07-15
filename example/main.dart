@@ -94,13 +94,16 @@ void main() async {
 
   textSocketHandler.logEventStream
       .where(
-    (e) => {SocketLogEventType.ping, SocketLogEventType.pong}
-        .contains(e.socketLogEventType),
+    (e) => {
+      SocketLogEventType.ping,
+      SocketLogEventType.pong,
+      SocketLogEventType.log,
+    }.contains(e.socketLogEventType),
   )
       .listen((e) {
     // ignore: avoid_print
     print('> webSocket [type:${e.socketLogEventType.name}] '
-        '[ping: ${textSocketHandler.pingDelayMs}]');
+        '[ping: ${textSocketHandler.pingDelayMs}] ${e.message} / ${e.data}');
   });
 
   // Connecting to server:

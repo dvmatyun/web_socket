@@ -15,12 +15,13 @@ class SocketTopicImpl implements ISocketTopic {
   late final List<String> pathSegments;
 
   /// Constructor where you path ordered path segments from major to minor.
-  /// For example following list: <String>[host, topic1, topic2, topic3]
+  /// For example following list: (String)[host, topic1, topic2, topic3]
   /// Will result in [host/topic1/topic2/topic3] for [path] attribute
   SocketTopicImpl({required List<String> orderedPathSegments})
       : pathSegments = orderedPathSegments,
         path = orderedPathSegments.join(pathDelimiter);
 
+  /// Constructor where topic [path] is given as full path.
   SocketTopicImpl.path({required String fullPath}) {
     var posLeft = 0;
     while (fullPath.length > (posLeft + 1) &&

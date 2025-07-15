@@ -4,7 +4,7 @@ description: |
   Websocket messages routing, statuses and other features have easy-to-use
   interface.
 
-version: 1.2.5
+version: 1.3.0
 repository: https://github.com/dvmatyun/web_socket
 issue_tracker: https://github.com/dvmatyun/web_socket/issues
 homepage: https://github.com/dvmatyun/web_socket
@@ -13,12 +13,13 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
-  json_annotation: ^4.8.1
-  meta: ^1.2.0
+  web: '>=0.5.0 <2.0.0'
+  json_annotation: ">=4.8.1 <5.0.0"
+  meta: ">=1.2.0 <2.0.0"
 
 dev_dependencies:
-  json_serializable: ^6.7.1
-  lints: ^3.0.0
-  build_runner: ^2.4.7
+  json_serializable: ">=6.7.1"
+  lints: ^6.0.0
+  build_runner: ">=2.4.7"
   test: any
   coverage: any

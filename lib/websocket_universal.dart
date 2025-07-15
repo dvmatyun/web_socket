@@ -2,7 +2,7 @@
 /// Websocket messages routing, statuses and other features
 /// have easy-to-use interface.
 
-library websocket_universal;
+library;
 
 /// Enums:
 export 'src/websocket_base/enums/socket_log_event_type.dart';

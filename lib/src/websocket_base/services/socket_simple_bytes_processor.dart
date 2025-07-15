@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../../../websocket_universal.dart';
 
 /// IMessageProcessor that sends to and
-/// receives 'List<int>' bytes array from Server
+/// receives 'List(int)' bytes array from Server
 class SocketSimpleBytesProcessor
     implements IMessageProcessor<List<int>, List<int>> {
   @override
