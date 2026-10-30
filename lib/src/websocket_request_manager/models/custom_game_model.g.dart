@@ -9,7 +9,7 @@ part of 'custom_game_model.dart';
 CustomGameModel _$CustomGameModelFromJson(Map<String, dynamic> json) =>
     CustomGameModel(
       name: json['name'] as String,
-      playersAmount: json['playersAmount'] as int,
+      playersAmount: (json['playersAmount'] as num).toInt(),
     );
 
 Map<String, dynamic> _$CustomGameModelToJson(CustomGameModel instance) =>

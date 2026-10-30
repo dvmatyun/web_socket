@@ -35,12 +35,12 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
   /// Constructor
   WebSocketRequestManager({
     required IWebSocketHandler<ISocketMessage, ISocketMessage> webSocketHandler,
-    required ISocketManagerMiddleware middleware,
-  })  : _webSocketHandler = webSocketHandler,
-        _middleware = middleware,
-        _lastPingMs = webSocketHandler.pingDelayMs {
-    _webSocketInMsgSub =
-        _webSocketHandler.incomingMessagesStream.listen(_socketListener);
+    required this._middleware,
+  }) : _webSocketHandler = webSocketHandler,
+       _lastPingMs = webSocketHandler.pingDelayMs {
+    _webSocketInMsgSub = _webSocketHandler.incomingMessagesStream.listen(
+      _socketListener,
+    );
     _webSocketPingSub = _webSocketHandler.logEventStream
         .where(
           (e) => [
@@ -50,8 +50,9 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
           ].contains(e.socketLogEventType),
         )
         .listen((p) => _updatePing(p.pingMs));
-    _webSocketStatesSub =
-        _webSocketHandler.socketHandlerStateStream.listen(_socketStateListener);
+    _webSocketStatesSub = _webSocketHandler.socketHandlerStateStream.listen(
+      _socketStateListener,
+    );
     _checkNotFinishedRequests();
   }
 
@@ -73,8 +74,9 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
     if (_webSocketHandler.socketHandlerState.status != SocketStatus.connected) {
       return;
     }
-    final outMessage =
-        _middleware.encodeSocketMessage(socketRequest.requestMessage);
+    final outMessage = _middleware.encodeSocketMessage(
+      socketRequest.requestMessage,
+    );
     final isSent = _webSocketHandler.sendMessage(outMessage);
     if (!isSent) {
       _notFinishedSocketRequests[socketRequest.requestMessage.topic.path] =
@@ -83,8 +85,9 @@ class WebSocketRequestManager implements IWebSocketRequestManager {
 
     for (final t in socketRequest.responseTopics) {
       if (_awaitedTopics.containsKey(t.path)) {
-        if (!(_awaitedTopics[t.path]
-                ?.contains(socketRequest.requestMessage.topic.path) ??
+        if (!(_awaitedTopics[t.path]?.contains(
+              socketRequest.requestMessage.topic.path,
+            ) ??
             false)) {
           _awaitedTopics[t.path]?.add(socketRequest.requestMessage.topic.path);
         }

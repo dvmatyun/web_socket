@@ -11,16 +11,15 @@ IWebSocketBaseService<T, Y> createWebsocketBaseService<T, Y>(
   bool skipPingMessages = true,
   bool pingRestrictionForce = false,
   IPlatformWebsocket? platformWebsocket,
-}) =>
-    WebSocketBaseService<T, Y>(
-      connectUrlBase: connectUrlBase,
-      messageProcessor: messageProcessor,
-      timeoutConnectionMs: timeoutConnectionMs,
-      pingIntervalMs: pingIntervalMs,
-      skipPingMessages: skipPingMessages,
-      pingRestrictionForce: pingRestrictionForce,
-      platformWebsocket: platformWebsocket,
-    );
+}) => WebSocketBaseService<T, Y>(
+  connectUrlBase: connectUrlBase,
+  messageProcessor: messageProcessor,
+  timeoutConnectionMs: timeoutConnectionMs,
+  pingIntervalMs: pingIntervalMs,
+  skipPingMessages: skipPingMessages,
+  pingRestrictionForce: pingRestrictionForce,
+  platformWebsocket: platformWebsocket,
+);
 
 /// Base implementation of [IWebSocketBaseService]
 /// using [IPlatformWebsocket] abstraction
@@ -63,8 +62,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   @override
   Stream<ISocketState> get socketStateStream => _socketStateController.stream;
 
-  ISocketState _socketState =
-      SocketStateImpl(status: SocketStatus.disconnected, message: 'Created');
+  ISocketState _socketState = SocketStateImpl(
+    status: SocketStatus.disconnected,
+    message: 'Created',
+  );
   @override
   ISocketState get socketState {
     if (_disposed && _socketState.status != SocketStatus.disconnected) {
@@ -92,32 +93,25 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
 
   final int _disconnectPingTimeoutMs;
 
-  /// [connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
-  /// [messageProcessor] how to process incoming and outgoing messages
-  /// [timeoutConnectionMs] connection timeout in ms.
-  /// [pingRestrictionForce] If set to `true` then no ping messages will be
+  /// [_connectUrlBase] URL of websocket server. Example: 'ws://127.0.0.1:42627'
+  /// [_messageProcessor] how to process incoming and outgoing messages
+  /// [_timeoutConnectionMs] connection timeout in ms.
+  /// [_pingRestrictionForce] If set to `true` then no ping messages will be
   /// sent to server. Measuring ping feature will not work as intended!!!
   /// Connection fails if not established during this timeout.
-  /// [pingIntervalMs] how often send ping messages to server
+  /// [_pingIntervalMs] how often send ping messages to server
   /// you can pass your own implementation for [platformWebsocket]
   WebSocketBaseService({
-    required String connectUrlBase,
-    required IMessageProcessor<T, Y> messageProcessor,
-    int timeoutConnectionMs = 5000,
-    int pingIntervalMs = 1000,
-    int disconnectPingTimeoutMs = 4000,
-    bool skipPingMessages = true,
-    bool pingRestrictionForce = false,
+    required this._connectUrlBase,
+    required this._messageProcessor,
+    this._timeoutConnectionMs = 5000,
+    this._pingIntervalMs = 1000,
+    this._disconnectPingTimeoutMs = 4000,
+    this._skipPingMessages = true,
+    this._pingRestrictionForce = false,
     IPlatformWebsocket? platformWebsocket,
-  })  : _connectUrlBase = connectUrlBase,
-        _messageProcessor = messageProcessor,
-        _timeoutConnectionMs = timeoutConnectionMs,
-        _pingIntervalMs = pingIntervalMs,
-        _skipPingMessages = skipPingMessages,
-        _pingRestrictionForce = pingRestrictionForce,
-        _disconnectPingTimeoutMs = disconnectPingTimeoutMs,
-        _platformWebSocket =
-            platformWebsocket ?? IPlatformWebsocket.createPlatformWsClient();
+  }) : _platformWebSocket =
+           platformWebsocket ?? IPlatformWebsocket.createPlatformWsClient();
 
   SocketOptionalParams _latestParams = const SocketOptionalParams();
 
@@ -132,10 +126,7 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }) async {
     if (_disposed) {
       const errMsg = 'Socket is already disposed!';
-      _debugEventNotificationInternal(
-        SocketLogEventType.error,
-        errMsg,
-      );
+      _debugEventNotificationInternal(SocketLogEventType.error, errMsg);
       throw Exception(errMsg);
     }
     _latestParams = params;
@@ -177,8 +168,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   }
 
   Future<bool> _connectionInitialize(String baseUrl) async {
-    if ([SocketStatus.connected, SocketStatus.connecting]
-        .contains(socketState.status)) {
+    if ([
+      SocketStatus.connected,
+      SocketStatus.connecting,
+    ].contains(socketState.status)) {
       return false;
     }
     _notifySocketStatusInternal(
@@ -215,8 +208,9 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   Future<void> _listenMessagerFromServer() async {
     _checkPlatformIsConnected('_listenMessagerFromServer');
     await _fromServerMessagesSub?.cancel();
-    _fromServerMessagesSub = _platformWebSocket.incomingMessagesStream
-        .listen(_fromServerMessageInternal);
+    _fromServerMessagesSub = _platformWebSocket.incomingMessagesStream.listen(
+      _fromServerMessageInternal,
+    );
   }
 
   Future<void> _listenMessagesToServer() async {
@@ -281,8 +275,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
   void _addMessageToSocketOutgoingInternal(Object? input, bool notify) {
     try {
       if (input == null) {
-        throw ArgumentError.notNull('[_addMessageToSocketOutgoingInternal] '
-            'sent data must not be NULL!');
+        throw ArgumentError.notNull(
+          '[_addMessageToSocketOutgoingInternal] '
+          'sent data must not be NULL!',
+        );
       }
       if (notify) {
         _debugEventNotificationInternal(
@@ -368,8 +364,10 @@ class WebSocketBaseService<T, Y> implements IWebSocketBaseService<T, Y> {
       return;
     }
     final sb = StringBuffer(message);
-    if ([SocketLogEventType.ping, SocketLogEventType.socketStateChanged]
-        .contains(type)) {
+    if ([
+      SocketLogEventType.ping,
+      SocketLogEventType.socketStateChanged,
+    ].contains(type)) {
       sb.write(_platformWebSocket.platformStatus);
     }
 

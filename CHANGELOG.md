@@ -1,3 +1,6 @@
+# 1.4.0
+- Updated package dependencies.
+
 # 1.3.0
 - Now uses `dart:web` package instead of `dart:html`
 - Highly recommend testing the library before using in production (report any issues you find)
